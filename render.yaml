@@ -1,0 +1,22 @@
+# Blueprint: خادم تقارير تسعير (crowd API) على Render مع HTTPS.
+# ملاحظة: خطة free تعيد تشغيل الخدمة بعد الخمول وتفقد SQLite المحلي.
+# للبيانات الدائمة لاحقاً: ارفعي الخطة وأضيفي disk على /var/data.
+services:
+  - type: web
+    name: taseer-crowd
+    runtime: python
+    plan: free
+    region: frankfurt
+    branch: main
+    buildCommand: pip install -r requirements.txt
+    startCommand: python3 server/crowd.py
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    envVars:
+      - key: TASEER_API_ONLY
+        value: "1"
+      - key: TASEER_BIND
+        value: "0.0.0.0"
+      # فارغ = بدون CORS مفتوح (مناسب لتطبيق الجوال). للموقع ضع نطاقك.
+      - key: TASEER_CORS_ORIGINS
+        value: ""
