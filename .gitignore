@@ -7,6 +7,7 @@ android/local.properties
 android/.idea/
 *.iml
 .cxx/
+__pycache__/
 server/*.sqlite3
 server/*.sqlite3-wal
 server/*.sqlite3-shm
