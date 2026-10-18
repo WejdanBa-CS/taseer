@@ -36,8 +36,28 @@ class _CityScreenState extends State<CityScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text('في أي مدينة الصيانة؟', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
-          const SizedBox(height: 8),
+          Row(
+            children: [
+              TextButton(
+                onPressed: widget.state.goHome,
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.arrow_back_ios_new, size: 14),
+                    SizedBox(width: 4),
+                    Text('الرئيسية'),
+                  ],
+                ),
+              ),
+              const Spacer(),
+              const Text(
+                'أسعار قطع الغيار',
+                style: TextStyle(color: TaseerColors.muted, fontWeight: FontWeight.w700, fontSize: 12),
+              ),
+            ],
+          ),
+          const BrandEyebrow('نبدأ من هنا'),
+          const PageTitle('سيارتك بأي مدينة؟'),
           const SectionLead('السعر الأصلي موحّد في المملكة. المدينة تبقى مع الطلب لأن أجرة الورشة غير داخلة.'),
           TextField(
             decoration: const InputDecoration(
@@ -62,6 +82,16 @@ class _CityScreenState extends State<CityScreen> {
                   ...group.map(
                     (city) => ChoiceTile(
                       title: city.name,
+                      subtitle: 'المملكة العربية السعودية',
+                      leading: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: TaseerColors.brandSoft,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.location_on_outlined, color: TaseerColors.brand, size: 20),
+                      ),
                       onTap: () => widget.state.selectCity(city),
                     ),
                   ),
@@ -153,6 +183,9 @@ class _CarScreenState extends State<CarScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _bar('وش الوكالة؟', state),
+            const BrandEyebrow('الوكالة'),
+            const PageTitle('وش سيارتك؟'),
+            const SectionLead('اختر الوكالة، ثم حدد الموديل والسنة.'),
             ...Catalog.instance.brands.map(
               (brand) => ChoiceTile(
                 title: brand.name,
@@ -340,7 +373,7 @@ class _CarScreenState extends State<CarScreen> {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFFFAF6EF),
+        color: TaseerColors.soft,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
@@ -650,7 +683,7 @@ class _ResultScreenState extends State<ResultScreen> {
                   style: const TextStyle(
                     fontSize: 42,
                     fontWeight: FontWeight.w700,
-                    color: TaseerColors.copperDeep,
+                    color: TaseerColors.brand,
                     height: 1.1,
                   ),
                 ),
@@ -660,12 +693,12 @@ class _ResultScreenState extends State<ResultScreen> {
                     style: const TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.w700,
-                      color: TaseerColors.copperDeep,
+                      color: TaseerColors.brand,
                     ),
                   ),
                 const TextSpan(
                   text: ' ريال',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: TaseerColors.copperDeep),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: TaseerColors.brand),
                 ),
               ],
             ),
@@ -675,7 +708,7 @@ class _ResultScreenState extends State<ResultScreen> {
               margin: const EdgeInsets.only(top: 8),
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               decoration: BoxDecoration(
-                color: const Color(0xFFFAF6EF),
+                color: TaseerColors.soft,
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Row(
@@ -737,7 +770,7 @@ class _ResultScreenState extends State<ResultScreen> {
             width: double.infinity,
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: const Color(0xFFEEF3F1),
+              color: TaseerColors.brandSoft,
               borderRadius: BorderRadius.circular(14),
             ),
             child: Text(
@@ -767,7 +800,7 @@ class _ResultScreenState extends State<ResultScreen> {
       margin: const EdgeInsets.only(top: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFFFAF6EF),
+        color: TaseerColors.soft,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -797,7 +830,7 @@ class _ResultScreenState extends State<ResultScreen> {
       margin: const EdgeInsets.only(top: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFFF3F8F5),
+        color: TaseerColors.brandSoft,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(

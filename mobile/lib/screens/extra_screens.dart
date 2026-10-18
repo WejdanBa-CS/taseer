@@ -202,7 +202,7 @@ class _CostsScreenState extends State<CostsScreen> {
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: const Color(0xFFEEF3F1),
+              color: TaseerColors.brandSoft,
               borderRadius: BorderRadius.circular(14),
             ),
             child: Text(
@@ -375,7 +375,7 @@ class _GarageScreenState extends State<GarageScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: const Color(0xFFEEF3F1),
+                color: TaseerColors.brandSoft,
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Text(

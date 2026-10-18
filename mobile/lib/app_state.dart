@@ -8,7 +8,9 @@ import 'services/auth_store.dart';
 import 'services/billing.dart';
 import 'services/garage_store.dart';
 
-enum AppScreen { flow, login, costs, garage }
+enum AppScreen { home, flow, login, costs, garage }
+
+enum NavTab { home, cars, parts }
 
 enum CarStage { brand, model, year }
 
@@ -17,7 +19,8 @@ class AppState extends ChangeNotifier {
 
   final BillingService billing;
 
-  AppScreen screen = AppScreen.flow;
+  AppScreen screen = AppScreen.home;
+  NavTab tab = NavTab.home;
   int step = 0;
   CarStage carStage = CarStage.brand;
 
@@ -82,7 +85,14 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  void goHome() {
+    tab = NavTab.home;
+    screen = AppScreen.home;
+    notifyListeners();
+  }
+
   void goFlow() {
+    tab = NavTab.parts;
     screen = AppScreen.flow;
     notifyListeners();
   }
@@ -93,22 +103,57 @@ class AppState extends ChangeNotifier {
   }
 
   void openCosts() {
+    tab = NavTab.cars;
     screen = AppScreen.costs;
     notifyListeners();
   }
 
   void openGarage() {
+    tab = NavTab.cars;
     screen = AppScreen.garage;
     notifyListeners();
   }
 
+  void openTab(NavTab next) {
+    tab = next;
+    switch (next) {
+      case NavTab.home:
+        screen = AppScreen.home;
+      case NavTab.cars:
+        screen = subscribed ? AppScreen.garage : AppScreen.costs;
+      case NavTab.parts:
+        screen = AppScreen.flow;
+    }
+    notifyListeners();
+  }
+
   bool goBack() {
-    if (screen != AppScreen.flow) {
-      screen = AppScreen.flow;
+    if (screen == AppScreen.login) {
+      screen = tab == NavTab.home
+          ? AppScreen.home
+          : tab == NavTab.cars
+              ? (subscribed ? AppScreen.garage : AppScreen.costs)
+              : AppScreen.flow;
       notifyListeners();
       return true;
     }
-    if (step == 0) return false;
+    if (screen == AppScreen.costs || screen == AppScreen.garage) {
+      if (tab == NavTab.cars && screen == AppScreen.garage && !subscribed) {
+        screen = AppScreen.costs;
+        notifyListeners();
+        return true;
+      }
+      goHome();
+      return true;
+    }
+    if (screen != AppScreen.flow) {
+      goHome();
+      return true;
+    }
+    if (step == 0) {
+      goHome();
+      return true;
+    }
     if (step == 1) {
       if (carStage == CarStage.year) {
         carStage = CarStage.model;
@@ -129,6 +174,7 @@ class AppState extends ChangeNotifier {
 
   void selectCity(City value) {
     city = value;
+    tab = NavTab.parts;
     step = 1;
     carStage = CarStage.brand;
     notifyListeners();

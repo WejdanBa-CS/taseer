@@ -10,13 +10,7 @@ class ShellCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: EdgeInsets.zero,
-      child: Padding(
-        padding: padding ?? const EdgeInsets.fromLTRB(16, 18, 16, 20),
-        child: child,
-      ),
-    );
+    return child;
   }
 }
 
@@ -27,10 +21,48 @@ class SectionLead extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 14),
       child: Text(
         text,
-        style: const TextStyle(color: TaseerColors.muted, height: 1.45),
+        style: const TextStyle(color: TaseerColors.muted, height: 1.7, fontSize: 14),
+      ),
+    );
+  }
+}
+
+class BrandEyebrow extends StatelessWidget {
+  const BrandEyebrow(this.text, {super.key});
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: const TextStyle(
+        color: TaseerColors.brand,
+        fontWeight: FontWeight.w700,
+        fontSize: 12,
+      ),
+    );
+  }
+}
+
+class PageTitle extends StatelessWidget {
+  const PageTitle(this.text, {super.key});
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 8, bottom: 8),
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontSize: 28,
+          fontWeight: FontWeight.w800,
+          height: 1.35,
+          letterSpacing: -0.3,
+        ),
       ),
     );
   }
@@ -41,54 +73,80 @@ class ChoiceTile extends StatelessWidget {
     super.key,
     required this.title,
     this.subtitle,
+    this.leading,
     this.selected = false,
     required this.onTap,
   });
 
   final String title;
   final String? subtitle;
+  final Widget? leading;
   final bool selected;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 10),
       child: Material(
-        color: selected ? const Color(0xFFE7F2EC) : Colors.white,
+        color: selected ? TaseerColors.brandSoft : TaseerColors.surface,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(16),
           side: BorderSide(
-            color: selected ? TaseerColors.green : TaseerColors.line,
+            color: selected ? TaseerColors.brand : TaseerColors.line,
           ),
         ),
         child: InkWell(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(16),
           onTap: onTap,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+            child: Row(
               children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 17,
-                    color: selected ? TaseerColors.green : TaseerColors.ink,
+                if (leading != null) ...[
+                  leading!,
+                  const SizedBox(width: 12),
+                ],
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 15,
+                          color: selected ? TaseerColors.brand : TaseerColors.ink,
+                        ),
+                      ),
+                      if (subtitle != null && subtitle!.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          subtitle!,
+                          style: const TextStyle(
+                            color: TaseerColors.muted,
+                            fontWeight: FontWeight.w500,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
-                if (subtitle != null && subtitle!.isNotEmpty) ...[
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle!,
-                    style: const TextStyle(
-                      color: TaseerColors.muted,
-                      fontWeight: FontWeight.w500,
-                      fontSize: 13.5,
+                Container(
+                  width: 20,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: selected ? TaseerColors.brand : Colors.transparent,
+                    border: Border.all(
+                      color: selected ? TaseerColors.brand : TaseerColors.line,
                     ),
                   ),
-                ],
+                  child: selected
+                      ? const Icon(Icons.check, size: 12, color: Colors.white)
+                      : null,
+                ),
               ],
             ),
           ),
@@ -99,9 +157,10 @@ class ChoiceTile extends StatelessWidget {
 }
 
 class SoftNote extends StatelessWidget {
-  const SoftNote(this.text, {super.key, this.color});
+  const SoftNote(this.text, {super.key, this.color, this.amber = false});
   final String text;
   final Color? color;
+  final bool amber;
 
   @override
   Widget build(BuildContext context) {
@@ -110,12 +169,16 @@ class SoftNote extends StatelessWidget {
       margin: const EdgeInsets.only(top: 8),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFFFAF6EF),
-        borderRadius: BorderRadius.circular(14),
+        color: amber ? TaseerColors.accentSoft : TaseerColors.soft,
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Text(
         text,
-        style: TextStyle(color: color ?? TaseerColors.muted, height: 1.4),
+        style: TextStyle(
+          color: color ?? (amber ? const Color(0xFF78350F) : TaseerColors.muted),
+          height: 1.6,
+          fontSize: 12,
+        ),
       ),
     );
   }
@@ -138,21 +201,25 @@ class LockedGate extends StatelessWidget {
       margin: const EdgeInsets.only(top: 8),
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: const Color(0xFFE8E2D6),
-        borderRadius: BorderRadius.circular(16),
+        color: TaseerColors.brandSoft,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: TaseerColors.line),
       ),
       child: Column(
         children: [
+          const Icon(Icons.lock_outline, color: TaseerColors.brand, size: 28),
+          const SizedBox(height: 10),
           Text(
             message,
             textAlign: TextAlign.center,
             style: const TextStyle(
-              color: TaseerColors.green,
+              color: TaseerColors.brand,
               fontWeight: FontWeight.w700,
-              height: 1.45,
+              height: 1.5,
+              fontSize: 14,
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           ElevatedButton(
             onPressed: onLogin,
             child: const Text('سجّل دخولك'),
@@ -167,59 +234,79 @@ class StepperBar extends StatelessWidget {
   const StepperBar({super.key, required this.step});
   final int step;
 
-  static const labels = ['المدينة', 'السيارة', 'المشكلة', 'السعر'];
+  static const labels = ['المدينة', 'السيارة', 'القطعة', 'السعر'];
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: List.generate(labels.length, (index) {
-        final on = index == step;
-        final done = index < step;
-        return Expanded(
-          child: Column(
-            children: [
-              Container(
-                width: 28,
-                height: 28,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: on
-                      ? TaseerColors.green
-                      : done
-                          ? const Color(0xFFD7EBE3)
-                          : const Color(0xFFEFE6D8),
-                ),
-                child: Text(
-                  '${index + 1}',
-                  style: TextStyle(
-                    color: on
-                        ? Colors.white
-                        : done
-                            ? TaseerColors.green
-                            : TaseerColors.muted,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 13,
+    return Container(
+      padding: const EdgeInsets.all(6),
+      decoration: BoxDecoration(
+        color: TaseerColors.soft,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: List.generate(labels.length, (index) {
+          final on = index == step;
+          final done = index < step;
+          return Expanded(
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 2),
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 2),
+              decoration: BoxDecoration(
+                color: on ? TaseerColors.surface : Colors.transparent,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: on
+                    ? [
+                        BoxShadow(
+                          color: TaseerColors.ink.withValues(alpha: 0.04),
+                          blurRadius: 6,
+                        ),
+                      ]
+                    : null,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 18,
+                    height: 18,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: on || done ? TaseerColors.brand : TaseerColors.muted,
+                      ),
+                      color: done && !on ? TaseerColors.brandSoft : Colors.transparent,
+                    ),
+                    child: done && !on
+                        ? const Icon(Icons.check, size: 11, color: TaseerColors.brand)
+                        : Text(
+                            '${index + 1}',
+                            style: TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w700,
+                              color: on || done ? TaseerColors.brand : TaseerColors.muted,
+                            ),
+                          ),
                   ),
-                ),
+                  const SizedBox(width: 4),
+                  Flexible(
+                    child: Text(
+                      labels[index],
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: on || done ? TaseerColors.brand : TaseerColors.muted,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 4),
-              Text(
-                labels[index],
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: on ? FontWeight.w700 : FontWeight.w500,
-                  color: on
-                      ? TaseerColors.green
-                      : done
-                          ? TaseerColors.green2
-                          : TaseerColors.muted,
-                ),
-              ),
-            ],
-          ),
-        );
-      }),
+            ),
+          );
+        }),
+      ),
     );
   }
 }
