@@ -1085,12 +1085,12 @@ function paywall(tone, quote, low, high) {
 
 function requestPurchase(productId) {
   state.payError = "";
-  const bridge = window.TaseerAndroid;
+  const bridge = nativeBridge();
   if (bridge && typeof bridge.purchase === "function") {
     bridge.purchase(productId);
     return;
   }
-  state.payError = "الدفع يتم من تطبيق أندرويد بعد ربطه بمتجر بلاي.";
+  state.payError = "الدفع يتم من تطبيق الجوال بعد ربطه بمتجر بلاي أو آب ستور.";
   render();
 }
 
@@ -1356,7 +1356,7 @@ function paintAd() {
   if (!slot) return;
   const subscribed = monthActive(readAccess());
   let nativeOwns = false;
-  const bridge = window.TaseerAndroid;
+  const bridge = window.TaseerNative || window.TaseerAndroid;
   if (bridge && typeof bridge.setAdsVisible === "function") {
     try {
       nativeOwns = bridge.setAdsVisible(!subscribed) === true;
@@ -1958,9 +1958,13 @@ function render() {
   booted = true;
 }
 
+function nativeBridge() {
+  return window.TaseerNative || window.TaseerAndroid || null;
+}
+
 document.addEventListener("click", (event) => {
   const link = event.target.closest("a[href]");
-  const bridge = window.TaseerAndroid;
+  const bridge = nativeBridge();
   if (!link || !bridge || typeof bridge.open !== "function") return;
   if (!/^https?:/i.test(link.href)) return;
   event.preventDefault();
