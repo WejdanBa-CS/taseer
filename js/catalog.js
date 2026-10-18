@@ -82,6 +82,11 @@ window.TASEER_SOURCES = {
     url: "https://parts.toyota.com.sa/",
     note: "كتالوج مباشر حسب القطعة. ما انضاف للجدول لأنه ليس قائمة محملة مثل كيا وفيكتوري.",
   },
+  aramco: {
+    name: "أسعار وقود أرامكو داخل المملكة",
+    url: "https://www.aramco.com/en/what-we-do/energy-products/retail-fuels",
+    note: "سعر اللتر من صفحة أرامكو كما قرأناها في أكتوبر 2026: بنزين 91 و95 و98 والديزل.",
+  },
   commerce: {
     name: "إلزام وزارة التجارة بنشر أسعار القطع",
     url: "https://www.okaz.com.sa/economy/na/2201739",

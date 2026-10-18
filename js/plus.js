@@ -17,12 +17,27 @@
       insuranceSar: 0,
       insuranceRenew: "",
       expenses: [],
+      carPrice: 0,
+      fuelGrade: "91",
+      litersPerMonth: 0,
     };
   }
 
   function moneyNumber(value) {
     const number = Number(value);
     if (!Number.isFinite(number) || number < 0 || number > 1000000) return 0;
+    return Math.round(number * 100) / 100;
+  }
+
+  function carPriceNumber(value) {
+    const number = Number(value);
+    if (!Number.isFinite(number) || number < 0 || number > 5000000) return 0;
+    return Math.round(number * 100) / 100;
+  }
+
+  function litersNumber(value) {
+    const number = Number(value);
+    if (!Number.isFinite(number) || number < 0 || number > 2000) return 0;
     return Math.round(number * 100) / 100;
   }
 
@@ -35,6 +50,9 @@
       garage.fuelSar = moneyNumber(parsed.fuelSar);
       garage.insuranceSar = moneyNumber(parsed.insuranceSar);
       garage.insuranceRenew = typeof parsed.insuranceRenew === "string" ? parsed.insuranceRenew : "";
+      garage.carPrice = carPriceNumber(parsed.carPrice);
+      garage.fuelGrade = ["91", "95", "98", "diesel"].includes(parsed.fuelGrade) ? parsed.fuelGrade : "91";
+      garage.litersPerMonth = litersNumber(parsed.litersPerMonth);
       garage.expenses = Array.isArray(parsed.expenses)
         ? parsed.expenses.filter((item) => item && item.id && item.label).slice(0, 40)
         : [];
@@ -125,6 +143,16 @@
     return garage;
   }
 
+  function setCostInputs(input) {
+    const garage = read();
+    if ("carPrice" in input) garage.carPrice = carPriceNumber(input.carPrice);
+    if ("litersPerMonth" in input) garage.litersPerMonth = litersNumber(input.litersPerMonth);
+    if ("insuranceSar" in input) garage.insuranceSar = moneyNumber(input.insuranceSar);
+    if (["91", "95", "98", "diesel"].includes(input.fuelGrade)) garage.fuelGrade = input.fuelGrade;
+    write(garage);
+    return garage;
+  }
+
   function setInsurance(amount, renew) {
     const garage = read();
     garage.insuranceSar = moneyNumber(amount);
@@ -163,6 +191,7 @@
     setService,
     setFuel,
     setInsurance,
+    setCostInputs,
     addExpense,
     removeExpense,
     serviceStatus,

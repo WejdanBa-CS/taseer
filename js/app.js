@@ -239,7 +239,7 @@ function backBar(title) {
   const heading = document.createElement("h1");
   heading.textContent = title;
   bar.append(heading);
-  if (state.step > 0 || state.screen === "garage") {
+  if (state.step > 0 || state.screen === "garage" || state.screen === "costs") {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "linkish";
@@ -924,6 +924,170 @@ function reminderText(status) {
   return `بعد ${days} يوم.`;
 }
 
+function publishedParts() {
+  if (!state.brand || !state.model || !state.yearLabel) return [];
+  const rows = selectedRows();
+  const byPart = new Map();
+  rows.forEach((row) => {
+    if (!byPart.has(row.part)) byPart.set(row.part, []);
+    byPart.get(row.part).push(row.price);
+  });
+  return data.parts
+    .filter((part) => byPart.has(part.id))
+    .map((part) => {
+      const prices = byPart.get(part.id).slice().sort((a, b) => a - b);
+      return { id: part.id, name: part.name, low: prices[0], high: prices[prices.length - 1] };
+    });
+}
+
+function renderCosts() {
+  const garage = window.TASEER_PLUS.read();
+  const parts = publishedParts();
+  const costs = window.TASEER_COSTS;
+  const result = costs.bill({
+    carPrice: garage.carPrice,
+    litersPerMonth: garage.litersPerMonth,
+    fuelGrade: garage.fuelGrade,
+    fuelSar: garage.fuelSar,
+    insuranceSar: garage.insuranceSar,
+    parts,
+  });
+  panel.replaceChildren();
+  panel.append(backBar("قائمة التكلفة"));
+  const wrap = document.createElement("div");
+  wrap.className = "garage";
+  const lead = document.createElement("p");
+  lead.className = "lead";
+  const model = state.brand && state.model ? currentModel() : null;
+  lead.textContent = model
+    ? `${brandName(state.brand)} ${model.name} ${state.yearLabel}. القطع من قائمة الوكيل، والبنزين من أرامكو، وسعر السيارة والتأمين من الرقم اللي تكتبه.`
+    : "البنزين سعره موحّد من أرامكو. قطع الغيار تظهر بعد اختيار السيارة والسنة.";
+  wrap.append(lead);
+
+  const total = document.createElement("p");
+  total.className = "crowd-avg";
+  total.dir = "rtl";
+  total.textContent = `في الشهر تقريباً ${money(result.total)} ريال: السيارة ${money(result.carMonth)}، البنزين ${money(result.fuelMonth)}، الصيانة ${money(result.upkeepMonth)}، والتأمين ${money(result.insuranceMonth)}.`;
+  const totalNote = document.createElement("p");
+  totalNote.className = "note";
+  totalNote.textContent = "تقدير على 5 سنوات لسعر السيارة، وبدون فوائد وبدون أجرة الورشة.";
+  wrap.append(total, totalNote);
+
+  const carTitle = document.createElement("h2");
+  carTitle.textContent = "سعر السيارة";
+  const carNote = document.createElement("p");
+  carNote.className = "note";
+  carNote.textContent = "اكتب سعر السيارة اللي عرضه المعرض. هذا الرقم يدخل القسط التقديري.";
+  wrap.append(carTitle, carNote);
+
+  const fuelTitle = document.createElement("h2");
+  fuelTitle.textContent = "صرف البنزين";
+  const fuelNote = document.createElement("p");
+  fuelNote.className = "note";
+  const source = window.TASEER_SOURCES.aramco;
+  const sourceLink = document.createElement("a");
+  sourceLink.href = source.url;
+  sourceLink.target = "_blank";
+  sourceLink.rel = "noreferrer";
+  sourceLink.textContent = source.name;
+  fuelNote.append(sourceLink, document.createTextNode(`. ${source.note}`));
+  const grades = document.createElement("div");
+  grades.className = "choices";
+  costs.fuels.forEach((fuel) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = fuel.id === garage.fuelGrade ? "choice on" : "choice";
+    button.textContent = `${fuel.name} · ${money(fuel.perLiter)} للتر`;
+    button.addEventListener("click", () => {
+      window.TASEER_PLUS.setCostInputs({ fuelGrade: fuel.id });
+      render();
+    });
+    grades.append(button);
+  });
+  wrap.append(fuelTitle, fuelNote, grades);
+
+  const form = document.createElement("form");
+  form.className = "quote";
+  const carInput = document.createElement("input");
+  carInput.className = "search";
+  carInput.inputMode = "decimal";
+  carInput.placeholder = "سعر السيارة في المعرض";
+  carInput.setAttribute("aria-label", "سعر السيارة");
+  carInput.value = garage.carPrice ? String(garage.carPrice) : "";
+  const literInput = document.createElement("input");
+  literInput.className = "search";
+  literInput.inputMode = "decimal";
+  literInput.placeholder = "كم لتر في الشهر";
+  literInput.setAttribute("aria-label", "لترات الشهر");
+  literInput.value = garage.litersPerMonth ? String(garage.litersPerMonth) : "";
+  const coverInput = document.createElement("input");
+  coverInput.className = "search";
+  coverInput.inputMode = "decimal";
+  coverInput.placeholder = "التأمين في السنة";
+  coverInput.setAttribute("aria-label", "مبلغ التأمين السنوي");
+  coverInput.value = garage.insuranceSar ? String(garage.insuranceSar) : "";
+  const save = document.createElement("button");
+  save.type = "submit";
+  save.className = "primary";
+  save.textContent = "حدّث القائمة";
+  form.append(carInput, literInput, coverInput, save);
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    window.TASEER_PLUS.setCostInputs({
+      carPrice: parseQuote(carInput.value),
+      litersPerMonth: parseQuote(literInput.value),
+      insuranceSar: parseQuote(coverInput.value),
+    });
+    render();
+  });
+  wrap.append(form);
+  if (result.fuelSource === "record") {
+    const recorded = document.createElement("p");
+    recorded.className = "note";
+    recorded.textContent = `البنزين في المجموع من رقم السجل ${money(garage.fuelSar)} ريال، لأن لترات الشهر فاضية.`;
+    wrap.append(recorded);
+  }
+
+  const partsTitle = document.createElement("h2");
+  partsTitle.textContent = "قطع الغيار المنشورة";
+  wrap.append(partsTitle);
+  if (!parts.length) {
+    wrap.append(crowdNote("اختَر السيارة والسنة في التسعير عشان نعرض قطعها."));
+  } else {
+    const list = document.createElement("div");
+    list.className = "choices";
+    parts.forEach((part) => {
+      const months = costs.upkeepMonths[part.id];
+      const priceText = part.low === part.high ? `${money(part.low)} ريال` : `${money(part.low)} إلى ${money(part.high)} ريال`;
+      const detail = months ? `${priceText} · كل ${months} شهر` : `${priceText} · عند الحاجة`;
+      list.append(
+        choice(part.name, detail, () => {
+          state.part = part.id;
+          state.quote = "";
+          state.screen = "prices";
+          state.step = 3;
+          render();
+        })
+      );
+    });
+    wrap.append(list);
+    const once = document.createElement("p");
+    once.className = "note";
+    once.textContent = `وحدة من كل قطعة منشورة: ${money(result.partsOnce)} ريال. الصيانة الشهرية فوق تحسب القطع الدورية بس.`;
+    wrap.append(once);
+  }
+
+  const coverTitle = document.createElement("h2");
+  coverTitle.textContent = "التأمين";
+  const coverNote = document.createElement("p");
+  coverNote.className = "note";
+  coverNote.textContent = garage.insuranceSar
+    ? `المبلغ السنوي ${money(garage.insuranceSar)} ريال، وحصته في الشهر ${money(result.insuranceMonth)} ريال.`
+    : "اكتب مبلغ التأمين السنوي في الخانة فوق. سعر التأمين يختلف من شخص لشخص.";
+  wrap.append(coverTitle, coverNote);
+  panel.append(wrap);
+}
+
 function renderGarage() {
   panel.replaceChildren();
   const subscribed = monthActive(readAccess());
@@ -1148,7 +1312,7 @@ function renderGarageOpen(garage, now) {
 }
 
 function taseerGoBack() {
-  if (state.screen === "garage") {
+  if (state.screen === "garage" || state.screen === "costs") {
     state.screen = "prices";
     render();
     return true;
@@ -1170,9 +1334,10 @@ function taseerGoBack() {
 
 function render() {
   paintAd();
-  if (state.screen === "garage") {
+  if (state.screen === "garage" || state.screen === "costs") {
     steps.hidden = true;
-    renderGarage();
+    if (state.screen === "garage") renderGarage();
+    else renderCosts();
     if (booted) {
       const heading = panel.querySelector("h1");
       if (heading) {
@@ -1209,6 +1374,10 @@ document.addEventListener("click", (event) => {
 window.taseerGoBack = taseerGoBack;
 document.querySelector("#my-car").addEventListener("click", () => {
   state.screen = "garage";
+  render();
+});
+document.querySelector("#cost-list").addEventListener("click", () => {
+  state.screen = "costs";
   render();
 });
 restore();

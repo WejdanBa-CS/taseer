@@ -77,7 +77,8 @@ button, input { font: inherit; touch-action: manipulation; }
 
 .brand { display: flex; gap: 12px; align-items: flex-start; }
 
-#my-car { margin-inline-start: auto; align-self: center; }
+.head-actions { margin-inline-start: auto; display: flex; gap: 4px; align-self: center; }
+.head-actions button { font-size: 0.95rem; }
 
 .logo { width: 48px; height: 48px; flex: none; display: block; }
 
@@ -178,6 +179,7 @@ button.choice {
   font-size: 1.05rem;
 }
 
+button.choice.on { border-color: var(--green); background: #e7f2ec; color: var(--green); }
 button.choice:hover, button.choice:focus-visible { border-color: var(--green-2); }
 button.choice:active { background: #f6f1e8; }
 
