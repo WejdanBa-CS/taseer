@@ -1,25 +1,33 @@
-# تسعير — غلاف Flutter
+# تسعير — تطبيق Flutter / Dart
 
-مشروع Flutter واحد لأندرويد وiOS. الواجهة نفسها من ملفات الويب في جذر المستودع، والغلاف يفتحها داخل WebView ويربط الدفع بروابط المتجر.
+واجهة أصلية بـ Flutter لأندرويد وiOS. مو WebView.
 
-## قبل كل بناء
+## التشغيل
 
 ```bash
-./scripts/sync_flutter_web.sh
 cd mobile
 flutter pub get
-```
-
-## تشغيل
-
-```bash
-cd mobile
 flutter run
 ```
 
-- أندرويد: `flutter build apk`
-- iOS (من جهاز ماك): `flutter build ios`
+خادم التقارير المحلي (تعليقات ومتوسط الورشة):
+
+```bash
+TASEER_CROWD_DB=/tmp/taseer-crowd.sqlite3 PORT=8771 python3 server/crowd.py
+```
+
+أو مرّر الرابط وقت البناء:
+
+```bash
+flutter run --dart-define=TASEER_CROWD_ENDPOINT=https://your-host
+```
+
+## البناء
+
+```bash
+flutter build apk
+# على ماك:
+flutter build ios
+```
 
 معرف التطبيق: `sa.taseer.app`
-
-مجلد `android/` القديم في الجذر هو الغلاف القديم السابق؛ البناء للمتاجر من `mobile/`.

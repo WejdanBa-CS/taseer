@@ -1,5 +1,5 @@
 name: taseer
-description: تسعير — سعر القطعة الأصلية قبل الورشة، غلاف Flutter لأندرويد وiOS.
+description: تسعير — تطبيق Flutter لأسعار قطع الغيار في السعودية.
 publish_to: "none"
 version: 1.0.0+1
 
@@ -9,11 +9,12 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  webview_flutter: ^4.13.0
-  webview_flutter_android: ^4.10.0
-  webview_flutter_wkwebview: ^3.23.0
+  flutter_localizations:
+    sdk: flutter
+  http: ^1.5.0
+  intl: ^0.20.2
+  shared_preferences: ^2.5.3
   url_launcher: ^6.3.2
-  path_provider: ^2.1.5
   in_app_purchase: ^3.2.3
 
 dev_dependencies:
@@ -22,10 +23,9 @@ dev_dependencies:
   flutter_lints: ^5.0.0
 
 flutter:
-  uses-material-design: false
+  uses-material-design: true
   assets:
-    - assets/www/index.html
-    - assets/www/favicon.svg
-    - assets/www/css/
-    - assets/www/js/
-    - assets/www/fonts/
+    - assets/data/parts.json
+    - assets/data/cities.json
+    - assets/data/sources.json
+    - assets/data/fuels.json

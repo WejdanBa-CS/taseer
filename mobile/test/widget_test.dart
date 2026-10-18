@@ -1,11 +1,14 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:taseer/main.dart';
+import 'package:taseer/data/catalog.dart';
 
 void main() {
-  testWidgets('يفتح غلاف تسعير', (tester) async {
-    await tester.pumpWidget(const TaseerApp());
-    expect(find.byType(TaseerShell), findsOneWidget);
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  test('يحمّل كتالوج القطع', () async {
+    final catalog = await Catalog.load();
+    expect(catalog.rows.length, greaterThan(100));
+    expect(catalog.brands.length, 2);
+    expect(catalog.cities, isNotEmpty);
+    expect(catalog.modelsForBrand('kia'), isNotEmpty);
   });
 }
