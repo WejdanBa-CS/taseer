@@ -37,7 +37,14 @@ class MainActivity : AppCompatActivity() {
         webView.settings.apply {
             javaScriptEnabled = true
             domStorageEnabled = true
-            allowFileAccess = true
+            // نحمّل الأصول من android_asset فقط — لا نفتح ملفات الجهاز.
+            allowFileAccess = false
+            allowContentAccess = false
+            @Suppress("DEPRECATION")
+            allowFileAccessFromFileURLs = false
+            @Suppress("DEPRECATION")
+            allowUniversalAccessFromFileURLs = false
+            mixedContentMode = android.webkit.WebSettings.MIXED_CONTENT_NEVER_ALLOW
             setSupportZoom(false)
             builtInZoomControls = false
             displayZoomControls = false
@@ -143,13 +150,17 @@ class MainActivity : AppCompatActivity() {
     private class Bridge(private val activity: MainActivity) {
         @JavascriptInterface
         fun open(url: String) {
-            val uri = Uri.parse(url)
+            val uri = Uri.parse(url.trim())
+            val scheme = uri.scheme?.lowercase() ?: return
+            if (scheme != "http" && scheme != "https") return
             activity.runOnUiThread { activity.openExternal(uri) }
         }
 
         @JavascriptInterface
         fun purchase(productId: String) {
-            activity.runOnUiThread { activity.billing.purchase(productId) }
+            val id = productId.trim()
+            if (id != BillingGate.ONCE && id != BillingGate.MONTH) return
+            activity.runOnUiThread { activity.billing.purchase(id) }
         }
 
         @JavascriptInterface

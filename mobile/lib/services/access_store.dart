@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AccessState {
@@ -20,6 +21,15 @@ class AccessState {
 class AccessStore {
   static const _accessKey = 'taseer-access';
   static const _tokenKey = 'taseer-tokens';
+
+  static bool _isDebugToken(String token) =>
+      token.startsWith('debug-') || token.startsWith('debug-flutter-');
+
+  static bool _tokenAllowed(String token) {
+    if (token.isEmpty) return false;
+    if (_isDebugToken(token)) return kDebugMode;
+    return token.length >= 8 && token.length <= 256;
+  }
 
   static Future<AccessState> read() async {
     final prefs = await SharedPreferences.getInstance();
@@ -44,7 +54,7 @@ class AccessStore {
     try {
       final parsed = jsonDecode(raw);
       if (parsed is! List) return [];
-      return parsed.whereType<String>().toList();
+      return parsed.whereType<String>().where(_tokenAllowed).toList();
     } catch (_) {
       return [];
     }
@@ -54,24 +64,25 @@ class AccessStore {
     required String kind,
     required String token,
   }) async {
+    if (kind != 'month' && kind != 'once') return;
+    if (!_tokenAllowed(token)) return;
+
     final tokens = await readTokens();
     final access = await read();
     if (kind == 'month') {
       access.monthUntil =
           DateTime.now().millisecondsSinceEpoch + 30 * 24 * 60 * 60 * 1000;
     }
-    if (token.isNotEmpty && tokens.contains(token)) {
+    if (tokens.contains(token)) {
       await write(access);
       return;
     }
-    if (token.isNotEmpty) {
-      tokens.add(token);
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(
-        _tokenKey,
-        jsonEncode(tokens.length <= 40 ? tokens : tokens.sublist(tokens.length - 40)),
-      );
-    }
+    tokens.add(token);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+      _tokenKey,
+      jsonEncode(tokens.length <= 40 ? tokens : tokens.sublist(tokens.length - 40)),
+    );
     if (kind != 'month') access.credits += 1;
     await write(access);
   }

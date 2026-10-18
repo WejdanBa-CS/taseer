@@ -13,13 +13,24 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 DB_PATH = Path(os.environ.get("TASEER_CROWD_DB", Path(__file__).with_name("crowd.sqlite3")))
 PORT = int(os.environ.get("PORT", "8765"))
+# على Render لازم 0.0.0.0. محلياً الأفضل 127.0.0.1.
+HOST = os.environ.get("TASEER_BIND", os.environ.get("HOST", "0.0.0.0"))
+# قائمة origins مفصولة بفواصل. فارغ = لا نرسل * (أأمن للإنتاج).
+CORS_ORIGINS = {
+    item.strip()
+    for item in os.environ.get("TASEER_CORS_ORIGINS", "").split(",")
+    if item.strip()
+}
+API_ONLY = os.environ.get("TASEER_API_ONLY", "").strip() in {"1", "true", "yes"}
 NEEDED = 3
 MAX_BODY = 4096
 CAR_BODY = 8192
 CAR_BRANDS = {"kia", "victory"}
 RATE_LIMIT = 120
+RATE_LIMIT_WRITE = 40
 RATE_WINDOW = 600
 recent_hits = {}
+recent_writes = {}
 
 STATICS = {
     ".html": "text/html; charset=utf-8",
@@ -112,15 +123,28 @@ def round_money(value):
     return round(float(value) + 1e-9, 2)
 
 
-def allow(ip):
+def allow(ip, *, write=False):
     now = time.time()
-    hits = [stamp for stamp in recent_hits.get(ip, []) if now - stamp < RATE_WINDOW]
-    if len(hits) >= RATE_LIMIT:
-        recent_hits[ip] = hits
+    bucket = recent_writes if write else recent_hits
+    limit = RATE_LIMIT_WRITE if write else RATE_LIMIT
+    hits = [stamp for stamp in bucket.get(ip, []) if now - stamp < RATE_WINDOW]
+    if len(hits) >= limit:
+        bucket[ip] = hits
         return False
     hits.append(now)
-    recent_hits[ip] = hits
+    bucket[ip] = hits
     return True
+
+
+def cors_origin(handler):
+    origin = handler.headers.get("Origin", "").strip()
+    if not CORS_ORIGINS:
+        return None
+    if "*" in CORS_ORIGINS:
+        return "*"
+    if origin and origin in CORS_ORIGINS:
+        return origin
+    return None
 
 
 def first_value(source, key):
@@ -224,10 +248,16 @@ class CrowdHandler(BaseHTTPRequestHandler):
         return
 
     def end_headers(self):
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header("Referrer-Policy", "no-referrer")
+        self.send_header("X-Frame-Options", "DENY")
         if self.path.startswith("/api/") or self.path.startswith("/health"):
-            self.send_header("Access-Control-Allow-Origin", "*")
-            self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-            self.send_header("Access-Control-Allow-Headers", "Content-Type")
+            origin = cors_origin(self)
+            if origin:
+                self.send_header("Access-Control-Allow-Origin", origin)
+                self.send_header("Vary", "Origin")
+                self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+                self.send_header("Access-Control-Allow-Headers", "Content-Type")
             self.send_header("Cache-Control", "no-store")
         super().end_headers()
 
@@ -240,6 +270,12 @@ class CrowdHandler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_OPTIONS(self):
+        if not (self.path.startswith("/api/") or self.path.startswith("/health")):
+            self.send_json(404, {"ok": False})
+            return
+        if cors_origin(self) is None and CORS_ORIGINS:
+            self.send_json(403, {"ok": False})
+            return
         self.send_response(204)
         self.send_header("Content-Length", "0")
         self.end_headers()
@@ -262,6 +298,9 @@ class CrowdHandler(BaseHTTPRequestHandler):
                     return
                 self.send_json(200, self.read_cars(urllib.parse.parse_qs(parsed.query)))
                 return
+            if API_ONLY:
+                self.send_json(404, {"ok": False})
+                return
             self.serve_static(parsed.path)
         except ValueError:
             self.send_json(400, {"ok": False})
@@ -275,7 +314,7 @@ class CrowdHandler(BaseHTTPRequestHandler):
             if parsed.path not in ("/api/crowd", "/api/cars"):
                 self.send_json(404, {"ok": False})
                 return
-            if not allow(self.client_address[0]):
+            if not allow(self.client_address[0], write=True):
                 self.send_json(429, {"ok": False})
                 return
             length = int(self.headers.get("Content-Length", "0"))
@@ -283,7 +322,11 @@ class CrowdHandler(BaseHTTPRequestHandler):
             if length <= 0 or length > limit:
                 self.send_json(400, {"ok": False})
                 return
-            payload = json.loads(self.rfile.read(length).decode("utf-8"))
+            raw = self.rfile.read(length)
+            if len(raw) != length:
+                self.send_json(400, {"ok": False})
+                return
+            payload = json.loads(raw.decode("utf-8"))
             if parsed.path == "/api/cars":
                 self.send_json(200, self.save_car(payload))
                 return
@@ -441,8 +484,9 @@ class CrowdHandler(BaseHTTPRequestHandler):
 
 def main():
     connect().close()
-    server = ThreadingHTTPServer(("0.0.0.0", PORT), CrowdHandler)
-    print(f"تسعير يستمع على http://0.0.0.0:{PORT}")
+    server = ThreadingHTTPServer((HOST, PORT), CrowdHandler)
+    mode = "api-only" if API_ONLY else "api+static"
+    print(f"تسعير يستمع على http://{HOST}:{PORT} ({mode})")
     server.serve_forever()
 
 
