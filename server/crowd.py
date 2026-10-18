@@ -15,6 +15,8 @@ DB_PATH = Path(os.environ.get("TASEER_CROWD_DB", Path(__file__).with_name("crowd
 PORT = int(os.environ.get("PORT", "8765"))
 NEEDED = 3
 MAX_BODY = 4096
+CAR_BODY = 8192
+CAR_BRANDS = {"kia", "victory"}
 RATE_LIMIT = 120
 RATE_WINDOW = 600
 recent_hits = {}
@@ -51,6 +53,22 @@ def connect():
     conn.execute(
         "CREATE INDEX IF NOT EXISTS quotes_part ON quotes (brand, model, year_label, part)"
     )
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS car_notes (
+            device TEXT NOT NULL,
+            brand TEXT NOT NULL,
+            model TEXT NOT NULL,
+            city TEXT NOT NULL,
+            price REAL,
+            includes_fuel INTEGER NOT NULL,
+            body TEXT NOT NULL,
+            updated_at INTEGER NOT NULL,
+            PRIMARY KEY (device, brand, model)
+        )
+        """
+    )
+    conn.execute("CREATE INDEX IF NOT EXISTS car_notes_brand ON car_notes (brand, updated_at)")
     return conn
 
 
@@ -63,6 +81,10 @@ def clean_token(value, pattern_ok, limit):
 
 def valid_key(text):
     return all(char.isalnum() or char == "-" for char in text)
+
+
+def valid_model(text):
+    return "  " not in text and all(char.isalnum() or char in "- " for char in text)
 
 
 def valid_year(text):
@@ -99,6 +121,56 @@ def allow(ip):
     hits.append(now)
     recent_hits[ip] = hits
     return True
+
+
+def first_value(source, key):
+    value = source.get(key, "")
+    if isinstance(value, list):
+        return value[0] if value else ""
+    return value
+
+
+def parse_comment(value):
+    text = " ".join(str(value or "").split())
+    if len(text) < 2 or len(text) > 240 or any(char in "<>" for char in text):
+        return None
+    return text
+
+
+def parse_car_price(payload):
+    if "price" not in payload or payload["price"] is None or payload["price"] == "":
+        return None
+    value = number(payload["price"])
+    if value is None or value < 1000 or value > 5000000:
+        return "bad"
+    return round_money(value)
+
+
+def car_notes(conn, brand, device):
+    rows = conn.execute(
+        """
+        SELECT device, model, city, price, includes_fuel, body, updated_at
+        FROM car_notes
+        WHERE brand = ?
+        ORDER BY updated_at DESC, model
+        LIMIT 400
+        """,
+        (brand,),
+    ).fetchall()
+    notes = []
+    for row_device, model, city, price, includes_fuel, body, updated_at in rows:
+        notes.append(
+            {
+                "model": model,
+                "city": city,
+                "price": None if price is None else round_money(price),
+                "includesFuel": bool(includes_fuel),
+                "text": body,
+                "at": int(updated_at),
+                "mine": bool(device) and row_device == device,
+            }
+        )
+    return notes
 
 
 def summary(conn, brand, model, year_label, part, city):
@@ -184,6 +256,12 @@ class CrowdHandler(BaseHTTPRequestHandler):
                     return
                 self.send_json(200, self.read_summary(urllib.parse.parse_qs(parsed.query)))
                 return
+            if parsed.path == "/api/cars":
+                if not allow(self.client_address[0]):
+                    self.send_json(429, {"ok": False})
+                    return
+                self.send_json(200, self.read_cars(urllib.parse.parse_qs(parsed.query)))
+                return
             self.serve_static(parsed.path)
         except ValueError:
             self.send_json(400, {"ok": False})
@@ -194,17 +272,21 @@ class CrowdHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         try:
             parsed = urllib.parse.urlparse(self.path)
-            if parsed.path != "/api/crowd":
+            if parsed.path not in ("/api/crowd", "/api/cars"):
                 self.send_json(404, {"ok": False})
                 return
             if not allow(self.client_address[0]):
                 self.send_json(429, {"ok": False})
                 return
             length = int(self.headers.get("Content-Length", "0"))
-            if length <= 0 or length > MAX_BODY:
+            limit = CAR_BODY if parsed.path == "/api/cars" else MAX_BODY
+            if length <= 0 or length > limit:
                 self.send_json(400, {"ok": False})
                 return
             payload = json.loads(self.rfile.read(length).decode("utf-8"))
+            if parsed.path == "/api/cars":
+                self.send_json(200, self.save_car(payload))
+                return
             self.send_json(200, self.save_quote(payload))
         except (ValueError, json.JSONDecodeError, UnicodeDecodeError):
             self.send_json(400, {"ok": False})
@@ -268,6 +350,81 @@ class CrowdHandler(BaseHTTPRequestHandler):
             conn.close()
         result["accepted"] = accepted
         return result
+
+    def car_brand(self, source):
+        brand = clean_token(first_value(source, "brand"), valid_key, 40)
+        if brand not in CAR_BRANDS:
+            raise ValueError("brand")
+        return brand
+
+    def read_cars(self, query):
+        brand = self.car_brand(query)
+        device = clean_token(first_value(query, "device"), valid_device, 64)
+        if not device or len(device) < 16:
+            device = None
+        conn = connect()
+        try:
+            return {"ok": True, "brand": brand, "notes": car_notes(conn, brand, device)}
+        finally:
+            conn.close()
+
+    def save_car(self, payload):
+        if not isinstance(payload, dict):
+            raise ValueError("payload")
+        device = clean_token(payload.get("device", ""), valid_device, 64)
+        if not device or len(device) < 16:
+            raise ValueError("device")
+        brand = self.car_brand(payload)
+        model = clean_token(payload.get("model", ""), valid_model, 40)
+        city = clean_token(payload.get("city", ""), valid_city, 40)
+        if not model or not city:
+            raise ValueError("fields")
+        includes = payload.get("includesFuel", False)
+        if not isinstance(includes, bool):
+            raise ValueError("fuel")
+        price = parse_car_price(payload)
+        text = parse_comment(payload.get("text"))
+        message = ""
+        if price == "bad":
+            message = "اكتب سعر السيارة بين 1,000 و 5,000,000 ريال، أو اتركه فاضي."
+        elif includes and price is None:
+            message = "اكتب السعر إذا كان يشمل البنزين."
+        elif text is None:
+            message = "اكتب تعليقاً من حرفين إلى 240 حرف، بدون رموز HTML."
+        stored_price = None if price in (None, "bad") else price
+        conn = connect()
+        try:
+            if not message:
+                conn.execute(
+                    """
+                    INSERT INTO car_notes (
+                        device, brand, model, city, price, includes_fuel, body, updated_at
+                    )
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    ON CONFLICT(device, brand, model)
+                    DO UPDATE SET
+                        city = excluded.city,
+                        price = excluded.price,
+                        includes_fuel = excluded.includes_fuel,
+                        body = excluded.body,
+                        updated_at = excluded.updated_at
+                    """,
+                    (
+                        device,
+                        brand,
+                        model,
+                        city,
+                        stored_price,
+                        1 if includes else 0,
+                        text,
+                        int(time.time()),
+                    ),
+                )
+                conn.commit()
+            notes = car_notes(conn, brand, device)
+        finally:
+            conn.close()
+        return {"ok": True, "accepted": not message, "message": message, "notes": notes}
 
     def serve_static(self, url_path):
         candidate = static_file(url_path)

@@ -11,6 +11,13 @@ const state = {
   unlockedKey: "",
   payError: "",
   screen: "prices",
+  budget: "",
+  fuelMode: "all",
+  modelQuery: "",
+  showRest: false,
+  carNotes: [],
+  carNotesStatus: "idle",
+  carNotesBrand: "",
 };
 
 const STEP_LABELS = ["المدينة", "السيارة", "المشكلة", "السعر"];
@@ -139,6 +146,9 @@ function persist() {
         part: state.part,
         quote: state.quote,
         unlockedKey: state.unlockedKey,
+        budget: state.budget,
+        fuelMode: state.fuelMode,
+        modelQuery: state.modelQuery,
       })
     );
   } catch (error) {
@@ -163,6 +173,9 @@ function restore() {
     state.part = saved.part || null;
     state.quote = typeof saved.quote === "string" ? saved.quote : "";
     state.unlockedKey = typeof saved.unlockedKey === "string" ? saved.unlockedKey : "";
+    state.budget = typeof saved.budget === "string" ? saved.budget : "";
+    state.fuelMode = saved.fuelMode === "yes" || saved.fuelMode === "no" ? saved.fuelMode : "all";
+    state.modelQuery = typeof saved.modelQuery === "string" ? saved.modelQuery : "";
     state.carStage = saved.carStage || "brand";
     state.step = Number.isInteger(saved.step) ? saved.step : 0;
     if (!state.city) state.step = 0;
@@ -266,6 +279,8 @@ function selectBrand(id) {
     state.part = null;
     state.quote = "";
   }
+  state.modelQuery = "";
+  state.showRest = false;
   state.carStage = "model";
   render();
 }
@@ -346,6 +361,327 @@ function renderCity() {
   draw();
 }
 
+function budgetAmount() {
+  const budget = parseQuote(state.budget);
+  return Number.isFinite(budget) && budget > 0 ? budget : 0;
+}
+
+function filterActive() {
+  return budgetAmount() > 0 || state.fuelMode !== "all";
+}
+
+function noteMatches(note) {
+  if (note.price == null) return false;
+  const budget = budgetAmount();
+  if (budget && note.price > budget) return false;
+  if (state.fuelMode === "yes" && !note.includesFuel) return false;
+  if (state.fuelMode === "no" && note.includesFuel) return false;
+  return true;
+}
+
+function notesForModel(modelId) {
+  return state.carNotes.filter((note) => note.model === modelId);
+}
+
+function arabicCount(count, one, dual, plural) {
+  if (count === 1) return one;
+  if (count === 2) return dual;
+  return `${count} ${plural}`;
+}
+
+function priceLine(notes) {
+  const priced = notes.filter((note) => note.price != null);
+  if (!priced.length) {
+    if (!notes.length) return "";
+    return arabicCount(notes.length, "تعليق", "تعليقان", "تعليقات");
+  }
+  const prices = priced.map((note) => note.price).sort((a, b) => a - b);
+  const low = prices[0];
+  const high = prices[prices.length - 1];
+  const amount = low === high ? `${money(low)} ريال` : `من ${money(low)} إلى ${money(high)} ريال`;
+  const withFuel = priced.filter((note) => note.includesFuel).length;
+  let fuel = " · بدون بنزين";
+  if (withFuel === priced.length) fuel = " · يشمل البنزين";
+  else if (withFuel > 0) fuel = " · فيه مع بنزين وبدون";
+  return amount + fuel;
+}
+
+function filteredModels() {
+  const query = norm(state.modelQuery);
+  return modelsForBrand(state.brand).filter(
+    (model) => !query || norm(model.name).includes(query) || norm(model.id).includes(query)
+  );
+}
+
+function modelButton(model, notes) {
+  return choice(model.name, priceLine(notes), () => selectModel(model.id));
+}
+
+function paintModelLists() {
+  const choices = document.querySelector("#model-choices");
+  const restWrap = document.querySelector("#model-rest");
+  const status = document.querySelector("#car-filter-status");
+  if (!choices || !restWrap || !status) return;
+  const models = filteredModels();
+  const active = filterActive() && state.carNotesStatus === "ready";
+  const matched = [];
+  const rest = [];
+  models.forEach((model) => {
+    const notes = notesForModel(model.id);
+    const shown = active ? notes.filter(noteMatches) : notes;
+    if (!active || shown.length) matched.push({ model, notes: shown });
+    else rest.push({ model, notes });
+  });
+  choices.replaceChildren();
+  if (!models.length) {
+    choices.append(emptyNote("ما لقينا هذا الموديل في القوائم المنشورة"));
+  } else if (active && !matched.length) {
+    choices.append(emptyNote("ما فيه سيارة تناسب هالميزانية في تعليقات المستخدمين."));
+  }
+  matched.forEach((item) => choices.append(modelButton(item.model, item.notes)));
+  restWrap.replaceChildren();
+  if (active && rest.length) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "secondary";
+    button.textContent = state.showRest ? "أخفِ باقي السيارات" : `أظهر باقي السيارات (${rest.length})`;
+    button.addEventListener("click", () => {
+      state.showRest = !state.showRest;
+      paintModelLists();
+    });
+    restWrap.append(button);
+    if (state.showRest) {
+      const box = document.createElement("div");
+      box.className = "choices";
+      rest.forEach((item) => box.append(modelButton(item.model, item.notes)));
+      restWrap.append(box);
+    }
+  }
+  if (state.carNotesStatus === "loading") status.textContent = "نجيب تعليقات المستخدمين...";
+  else if (state.carNotesStatus === "unavailable") {
+    status.textContent = "فلتر الميزانية والتعليقات يحتاجان اتصال بخادم التقارير.";
+  } else if (state.carNotesStatus === "offline") status.textContent = "ما قدرنا نجيب التعليقات. ارجع وحاول مرة ثانية.";
+  else status.textContent = "الفلتر على أسعار كتبها المستخدمون، مو سعر الوكيل.";
+}
+
+let carNotesRequest = 0;
+
+function applyCarResult(brand, request, result) {
+  if (request !== carNotesRequest || state.carNotesBrand !== brand) return;
+  if (result.unavailable) {
+    state.carNotesStatus = "unavailable";
+    state.carNotes = [];
+  } else if (result.offline || result.ok === false) {
+    if (!state.carNotes.length) state.carNotesStatus = "offline";
+  } else {
+    state.carNotesStatus = "ready";
+    state.carNotes = Array.isArray(result.notes) ? result.notes : [];
+  }
+  refreshCarNotesUi();
+}
+
+function ensureCarNotes(force) {
+  if (!state.brand) return;
+  const same = state.carNotesBrand === state.brand;
+  if (same && state.carNotesStatus === "loading") return;
+  if (same && state.carNotesStatus === "ready" && !force) return;
+  const brand = state.brand;
+  if (!same || state.carNotesStatus !== "ready") {
+    state.carNotes = [];
+    state.carNotesStatus = "loading";
+  }
+  state.carNotesBrand = brand;
+  const request = ++carNotesRequest;
+  window.TASEER_CARS.list(brand).then((result) => applyCarResult(brand, request, result));
+}
+
+function refreshCarNotesUi() {
+  if (document.querySelector("#model-choices")) paintModelLists();
+  const list = document.querySelector("#comment-list");
+  if (list) paintCommentList(list);
+  prefillCommentForm();
+}
+
+function commentWhen(at) {
+  if (!at) return "";
+  try {
+    return new Intl.DateTimeFormat("ar-SA-u-nu-latn", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    }).format(new Date(at * 1000));
+  } catch (error) {
+    return "";
+  }
+}
+
+function commentCard(note) {
+  const card = document.createElement("article");
+  card.className = "comment";
+  const head = document.createElement("p");
+  head.className = "comment-price";
+  const bits = [];
+  if (note.price != null) {
+    bits.push(`${money(note.price)} ريال`);
+    bits.push(note.includesFuel ? "يشمل البنزين" : "بدون بنزين");
+  }
+  if (note.city) bits.push(note.city);
+  head.textContent = bits.join(" · ");
+  const body = document.createElement("p");
+  body.textContent = note.text;
+  const meta = document.createElement("p");
+  meta.className = "hint";
+  meta.textContent = [note.mine ? "تعليقك" : "", commentWhen(note.at)].filter(Boolean).join(" · ");
+  card.append(head, body, meta);
+  return card;
+}
+
+function paintCommentList(list) {
+  if (!list || !state.model) return;
+  const notes = notesForModel(state.model);
+  list.replaceChildren();
+  if (state.carNotesStatus === "loading") {
+    list.append(emptyNote("نجيب التعليقات..."));
+    return;
+  }
+  if (state.carNotesStatus === "unavailable") {
+    list.append(emptyNote("التعليقات تظهر لما يتصل التطبيق بخادم التقارير."));
+    return;
+  }
+  if (state.carNotesStatus === "offline") {
+    list.append(emptyNote("ما قدرنا نجيب التعليقات."));
+    return;
+  }
+  if (!notes.length) {
+    list.append(emptyNote("كن أول من يعلق على هالسيارة."));
+    return;
+  }
+  notes.forEach((note) => list.append(commentCard(note)));
+}
+
+function prefillCommentForm() {
+  const form = document.querySelector("#car-comment-form");
+  if (!form || form.dataset.touched === "1" || !state.model) return;
+  const mine = state.carNotes.find((note) => note.model === state.model && note.mine);
+  if (!mine) return;
+  form.querySelector("[name=price]").value = mine.price == null ? "" : String(mine.price);
+  form.querySelector("[name=fuel]").checked = mine.includesFuel === true;
+  form.querySelector("[name=text]").value = mine.text;
+  form.querySelector("button.primary").textContent = "حدّث تعليقك";
+}
+
+function commentForm(model) {
+  const form = document.createElement("form");
+  form.id = "car-comment-form";
+  form.className = "quote";
+  const priceLabel = document.createElement("label");
+  priceLabel.textContent = "سعر السيارة بالريال، إذا تبيه";
+  priceLabel.htmlFor = "car-price";
+  const price = document.createElement("input");
+  price.id = "car-price";
+  price.name = "price";
+  price.inputMode = "decimal";
+  price.className = "search";
+  price.placeholder = "اختياري";
+  price.autocomplete = "off";
+  const tick = document.createElement("label");
+  tick.className = "tick";
+  const fuel = document.createElement("input");
+  fuel.type = "checkbox";
+  fuel.name = "fuel";
+  tick.append(fuel, document.createTextNode("السعر يشمل البنزين"));
+  const textLabel = document.createElement("label");
+  textLabel.textContent = "تعليقك على السيارة";
+  textLabel.htmlFor = "car-comment";
+  const text = document.createElement("textarea");
+  text.id = "car-comment";
+  text.name = "text";
+  text.className = "search";
+  text.maxLength = 240;
+  text.required = true;
+  text.placeholder = "وش رأيك بالسيارة أو بالسعر؟";
+  const submit = document.createElement("button");
+  submit.className = "primary";
+  submit.type = "submit";
+  submit.textContent = "انشر تعليقك";
+  const status = document.createElement("p");
+  status.className = "hint";
+  status.setAttribute("role", "status");
+  form.append(priceLabel, price, tick, textLabel, text, submit, status);
+  form.addEventListener("input", () => {
+    form.dataset.touched = "1";
+  });
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const raw = price.value;
+    const hasPrice = raw.trim() !== "";
+    const amount = parseQuote(raw);
+    const comment = text.value.trim();
+    if (hasPrice && (!Number.isFinite(amount) || amount < 1000 || amount > 5000000)) {
+      status.textContent = "اكتب سعر السيارة بين 1,000 و 5,000,000 ريال، أو اتركه فاضي.";
+      return;
+    }
+    if (fuel.checked && !hasPrice) {
+      status.textContent = "اكتب السعر إذا كان يشمل البنزين.";
+      return;
+    }
+    if (comment.length < 2 || comment.length > 240) {
+      status.textContent = "اكتب تعليقاً من حرفين إلى 240 حرف.";
+      return;
+    }
+    submit.disabled = true;
+    status.textContent = "ننشر تعليقك...";
+    const result = await window.TASEER_CARS.publish({
+      brand: state.brand,
+      model: model.id,
+      city: state.city ? state.city.name : "",
+      price: hasPrice ? amount : null,
+      includesFuel: fuel.checked,
+      text: comment,
+    });
+    submit.disabled = false;
+    if (result.unavailable) {
+      status.textContent = "التعليق يننشر لما يتصل التطبيق بخادم التقارير.";
+      return;
+    }
+    if (result.offline) {
+      status.textContent = "ما قدرنا ننشر التعليق. جرّب مرة ثانية.";
+      return;
+    }
+    if (Array.isArray(result.notes)) {
+      carNotesRequest += 1;
+      state.carNotes = result.notes;
+      state.carNotesStatus = "ready";
+      state.carNotesBrand = state.brand;
+    }
+    if (!result.accepted) {
+      status.textContent = result.message || "ما انقبل التعليق.";
+      return;
+    }
+    form.dataset.touched = "1";
+    submit.textContent = "حدّث تعليقك";
+    status.textContent = "اننشر تعليقك. يقدر غيرك يشوفه مع الفلتر.";
+    paintCommentList(document.querySelector("#comment-list"));
+  });
+  return form;
+}
+
+function renderCarComments(model) {
+  const wrap = document.createElement("section");
+  wrap.className = "comments";
+  const title = document.createElement("h2");
+  title.textContent = `تعليقات على ${model.name}`;
+  const lead = document.createElement("p");
+  lead.className = "hint";
+  lead.textContent = "هنا سعر السيارة من المستخدم، وإذا كان يشمل البنزين. سعر قطعة الوكيل يبقى في الخطوة الجاية.";
+  const list = document.createElement("div");
+  list.id = "comment-list";
+  wrap.append(title, lead, list, commentForm(model));
+  paintCommentList(list);
+  prefillCommentForm();
+  return wrap;
+}
+
 function renderCar() {
   panel.replaceChildren();
   if (state.carStage === "brand") {
@@ -368,35 +704,74 @@ function renderCar() {
   }
 
   if (state.carStage === "model") {
+    ensureCarNotes(true);
     panel.append(backBar(`نوع سيارة ${brandName(state.brand)}`));
+    const filters = document.createElement("div");
+    filters.className = "filters";
     const input = document.createElement("input");
     input.className = "search";
     input.type = "search";
     input.placeholder = "ابحث عن الموديل";
     input.setAttribute("aria-label", "البحث عن الموديل");
     input.autocomplete = "off";
-    const choices = document.createElement("div");
-    choices.className = "choices";
-    const draw = () => {
-      choices.replaceChildren();
-      const query = norm(input.value);
-      const models = modelsForBrand(state.brand).filter(
-        (model) => !query || norm(model.name).includes(query) || norm(model.id).includes(query)
-      );
-      if (!models.length) {
-        choices.append(emptyNote("ما لقينا هذا الموديل في القوائم المنشورة"));
-        return;
-      }
-      models.forEach((model) => {
-        choices.append(choice(model.name, "", () => selectModel(model.id)));
+    input.value = state.modelQuery;
+    const budget = document.createElement("input");
+    budget.className = "search";
+    budget.inputMode = "decimal";
+    budget.placeholder = "الميزانية: أقصى سعر بالريال";
+    budget.setAttribute("aria-label", "الميزانية");
+    budget.autocomplete = "off";
+    budget.value = state.budget;
+    const fuel = document.createElement("div");
+    fuel.className = "fuel-filter";
+    fuel.setAttribute("role", "group");
+    fuel.setAttribute("aria-label", "هل السعر يشمل البنزين");
+    [
+      ["all", "الكل"],
+      ["yes", "تشمل البنزين"],
+      ["no", "بدون بنزين"],
+    ].forEach(([id, label]) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = state.fuelMode === id ? "choice on" : "choice";
+      button.textContent = label;
+      button.addEventListener("click", () => {
+        state.fuelMode = id;
+        state.showRest = false;
+        fuel.querySelectorAll("button").forEach((item) => {
+          item.classList.toggle("on", item === button);
+        });
+        paintModelLists();
+        persist();
       });
-    };
-    input.addEventListener("input", draw);
-    panel.append(input, choices);
-    draw();
+      fuel.append(button);
+    });
+    const status = document.createElement("p");
+    status.id = "car-filter-status";
+    status.className = "hint";
+    status.setAttribute("role", "status");
+    filters.append(input, budget, fuel, status);
+    const choices = document.createElement("div");
+    choices.id = "model-choices";
+    choices.className = "choices";
+    const rest = document.createElement("div");
+    rest.id = "model-rest";
+    input.addEventListener("input", () => {
+      state.modelQuery = input.value;
+      paintModelLists();
+    });
+    budget.addEventListener("input", () => {
+      state.budget = budget.value;
+      state.showRest = false;
+      paintModelLists();
+      persist();
+    });
+    panel.append(filters, choices, rest);
+    paintModelLists();
     return;
   }
 
+  ensureCarNotes(true);
   const model = currentModel();
   panel.append(backBar(`سنة ${model.name}`));
   const choices = document.createElement("div");
@@ -404,7 +779,7 @@ function renderCar() {
   yearsForModel().forEach((year) => {
     choices.append(choice(year, "", () => selectYear(year)));
   });
-  panel.append(choices);
+  panel.append(choices, renderCarComments(model));
 }
 
 function renderProblem() {

@@ -295,7 +295,21 @@ button.secondary:active { background: #e7f2ec; }
 }
 
 .quote { display: grid; gap: 8px; }
-.quote input { margin: 0; }
+.quote input, .quote textarea { margin: 0; }
+
+.filters { display: grid; gap: 8px; margin-bottom: 12px; }
+.filters .search { margin-bottom: 0; }
+.fuel-filter { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.fuel-filter button.choice { min-height: 44px; padding: 8px 6px; font-size: 0.82rem; text-align: center; }
+.hint { margin: 0; color: var(--muted); font-size: 0.86rem; }
+.comments { display: grid; gap: 8px; margin-top: 16px; }
+.comments h2 { margin: 0; font-size: 1rem; }
+.comment { display: grid; gap: 4px; padding: 12px 14px; border-radius: 14px; background: #faf6ef; }
+.comment p { margin: 0; }
+.comment-price { font-weight: 700; color: var(--green); }
+.tick { display: flex; gap: 8px; align-items: center; font-weight: 600; }
+.tick input { width: 22px; height: 22px; accent-color: var(--green); }
+#model-rest { display: grid; gap: 8px; margin-top: 8px; }
 
 button.primary {
   width: 100%;

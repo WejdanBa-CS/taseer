@@ -59,5 +59,5 @@
     }
   }
 
-  window.TASEER_CROWD = { sync, needed: 3 };
+  window.TASEER_CROWD = { sync, needed: 3, deviceId };
 })();
