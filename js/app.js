@@ -987,18 +987,30 @@ function readTokens() {
   }
 }
 
+function isLocalHost() {
+  const host = String(location.hostname || "");
+  return host === "localhost" || host === "127.0.0.1" || host === "";
+}
+
+function tokenAllowed(token) {
+  if (!token || typeof token !== "string") return false;
+  if (token.length < 8 || token.length > 256) return false;
+  if (/^debug(-flutter)?-/.test(token)) return isLocalHost();
+  return true;
+}
+
 function grantAccess(event) {
+  if (!event || (event.kind !== "month" && event.kind !== "once")) return;
+  if (!tokenAllowed(event.token)) return;
   const tokens = readTokens();
   const access = readAccess();
   if (event.kind === "month") access.monthUntil = Date.now() + 30 * 24 * 60 * 60 * 1000;
-  if (event.token && tokens.includes(event.token)) {
+  if (tokens.includes(event.token)) {
     writeAccess(access);
     return;
   }
-  if (event.token) {
-    tokens.push(event.token);
-    localStorage.setItem(TOKEN_KEY, JSON.stringify(tokens.slice(-40)));
-  }
+  tokens.push(event.token);
+  localStorage.setItem(TOKEN_KEY, JSON.stringify(tokens.slice(-40)));
   if (event.kind !== "month") access.credits += 1;
   writeAccess(access);
 }

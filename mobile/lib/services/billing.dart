@@ -26,11 +26,14 @@ class BillingService {
   static const monthId = 'advice_month';
   static const productIds = {onceId, monthId};
 
-  /// Store billing is only wired on Android/iOS. Web/desktop use the debug grant path.
+  /// Store billing is only wired on Android/iOS.
   bool get _storeSupported =>
       !kIsWeb &&
       (defaultTargetPlatform == TargetPlatform.android ||
           defaultTargetPlatform == TargetPlatform.iOS);
+
+  /// Debug grants are never allowed in release/profile builds.
+  bool get _debugGrantsAllowed => kDebugMode;
 
   InAppPurchase? get _iap => _storeSupported ? InAppPurchase.instance : null;
   StreamSubscription<List<PurchaseDetails>>? _sub;
@@ -43,7 +46,7 @@ class BillingService {
     try {
       _sub = iap.purchaseStream.listen(_onPurchases, onError: (_) {});
     } catch (_) {
-      // Platform plugin missing (e.g. unsupported target) — stay on debug grants.
+      // Platform plugin missing — purchases stay unavailable outside debug.
     }
   }
 
@@ -66,17 +69,17 @@ class BillingService {
     }
     final iap = _iap;
     if (iap == null) {
-      _grantDebug(productId);
+      _grantDebugOrFail(productId);
       return;
     }
     final available = await iap.isAvailable();
     if (!available) {
-      _grantDebug(productId);
+      _grantDebugOrFail(productId);
       return;
     }
     final response = await iap.queryProductDetails(productIds);
     if (response.error != null || response.productDetails.isEmpty) {
-      _grantDebug(productId);
+      _grantDebugOrFail(productId);
       return;
     }
     ProductDetails? product;
@@ -112,7 +115,19 @@ class BillingService {
     }
   }
 
-  void _grantDebug(String productId) {
+  void _grantDebugOrFail(String productId) {
+    if (!_debugGrantsAllowed) {
+      onEvent?.call(
+        PurchaseEvent(
+          ok: false,
+          productId: productId,
+          token: '',
+          kind: productId == monthId ? 'month' : 'once',
+          message: 'الدفع يتم من تطبيق الجوال بعد ربطه بمتجر بلاي أو آب ستور.',
+        ),
+      );
+      return;
+    }
     onEvent?.call(
       PurchaseEvent(
         ok: true,
@@ -130,6 +145,7 @@ class BillingService {
     for (final purchase in purchases) {
       if (purchase.status == PurchaseStatus.pending) continue;
       final productId = purchase.productID;
+      if (!productIds.contains(productId)) continue;
       final kind = productId == monthId ? 'month' : 'once';
       if (purchase.status == PurchaseStatus.error) {
         onEvent?.call(
@@ -143,16 +159,28 @@ class BillingService {
         );
       } else if (purchase.status == PurchaseStatus.purchased ||
           purchase.status == PurchaseStatus.restored) {
-        onEvent?.call(
-          PurchaseEvent(
-            ok: true,
-            productId: productId,
-            token: purchase.purchaseID ??
-                'store-${DateTime.now().millisecondsSinceEpoch}',
-            kind: kind,
-            message: '',
-          ),
-        );
+        final token = purchase.purchaseID ?? '';
+        if (token.isEmpty) {
+          onEvent?.call(
+            PurchaseEvent(
+              ok: false,
+              productId: productId,
+              token: '',
+              kind: kind,
+              message: 'ما وصلنا تأكيد من المتجر.',
+            ),
+          );
+        } else {
+          onEvent?.call(
+            PurchaseEvent(
+              ok: true,
+              productId: productId,
+              token: token,
+              kind: kind,
+              message: '',
+            ),
+          );
+        }
       }
       if (purchase.pendingCompletePurchase) {
         await iap.completePurchase(purchase);

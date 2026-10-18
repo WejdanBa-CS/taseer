@@ -8,13 +8,32 @@ import 'device_id.dart';
 
 class Api {
   static String? _resolvedBase;
+  static const _timeout = Duration(seconds: 12);
+
+  static bool _isLocalHost(String host) =>
+      host == '127.0.0.1' || host == 'localhost' || host == '10.0.2.2';
+
+  /// يسمح بـ HTTPS دائماً، وHTTP فقط لخادم التطوير المحلي.
+  static bool _endpointAllowed(Uri uri) {
+    if (uri.scheme == 'https') return true;
+    if (uri.scheme == 'http' && _isLocalHost(uri.host)) return true;
+    return false;
+  }
 
   static Future<String> base() async {
     if (_resolvedBase != null) return _resolvedBase!;
     final configured = crowdEndpoint.trim().replaceAll(RegExp(r'/$'), '');
-    if (configured.startsWith('http://') || configured.startsWith('https://')) {
-      _resolvedBase = configured;
-      return configured;
+    if (configured.isNotEmpty) {
+      final uri = Uri.tryParse(configured);
+      if (uri != null &&
+          uri.hasScheme &&
+          uri.host.isNotEmpty &&
+          _endpointAllowed(uri)) {
+        _resolvedBase = configured;
+        return configured;
+      }
+      _resolvedBase = '';
+      return '';
     }
     // تطوير محلي: جرّب خادم التقارير على 8771 ثم 8765.
     for (final candidate in ['http://127.0.0.1:8771', 'http://127.0.0.1:8765']) {
@@ -45,31 +64,35 @@ class Api {
     try {
       http.Response response;
       if (quote != null && quote > 0) {
-        response = await http.post(
-          Uri.parse('$root/api/crowd'),
-          headers: {'content-type': 'application/json'},
-          body: jsonEncode({
-            'device': await DeviceId.get(),
-            'brand': brand,
-            'model': model,
-            'yearLabel': yearLabel,
-            'part': part,
-            'city': city,
-            'quote': quote,
-          }),
-        );
+        response = await http
+            .post(
+              Uri.parse('$root/api/crowd'),
+              headers: {'content-type': 'application/json; charset=utf-8'},
+              body: jsonEncode({
+                'device': await DeviceId.get(),
+                'brand': brand,
+                'model': model,
+                'yearLabel': yearLabel,
+                'part': part,
+                'city': city,
+                'quote': quote,
+              }),
+            )
+            .timeout(_timeout);
       } else {
-        response = await http.get(
-          Uri.parse('$root/api/crowd').replace(
-            queryParameters: {
-              'brand': brand,
-              'model': model,
-              'yearLabel': yearLabel,
-              'part': part,
-              'city': city,
-            },
-          ),
-        );
+        response = await http
+            .get(
+              Uri.parse('$root/api/crowd').replace(
+                queryParameters: {
+                  'brand': brand,
+                  'model': model,
+                  'yearLabel': yearLabel,
+                  'part': part,
+                  'city': city,
+                },
+              ),
+            )
+            .timeout(_timeout);
       }
       if (response.statusCode != 200) return CrowdStats.offline();
       final data = jsonDecode(response.body) as Map<String, dynamic>;
@@ -88,14 +111,16 @@ class Api {
       return (ok: false, unavailable: true, offline: false, notes: <CarNote>[]);
     }
     try {
-      final response = await http.get(
-        Uri.parse('$root/api/cars').replace(
-          queryParameters: {
-            'brand': brand,
-            'device': await DeviceId.get(),
-          },
-        ),
-      );
+      final response = await http
+          .get(
+            Uri.parse('$root/api/cars').replace(
+              queryParameters: {
+                'brand': brand,
+                'device': await DeviceId.get(),
+              },
+            ),
+          )
+          .timeout(_timeout);
       if (response.statusCode != 200) {
         return (ok: false, unavailable: false, offline: true, notes: <CarNote>[]);
       }
@@ -138,19 +163,21 @@ class Api {
       );
     }
     try {
-      final response = await http.post(
-        Uri.parse('$root/api/cars'),
-        headers: {'content-type': 'application/json'},
-        body: jsonEncode({
-          'device': await DeviceId.get(),
-          'brand': brand,
-          'model': model,
-          'city': city,
-          'price': price,
-          'includesFuel': includesFuel,
-          'text': text,
-        }),
-      );
+      final response = await http
+          .post(
+            Uri.parse('$root/api/cars'),
+            headers: {'content-type': 'application/json; charset=utf-8'},
+            body: jsonEncode({
+              'device': await DeviceId.get(),
+              'brand': brand,
+              'model': model,
+              'city': city,
+              'price': price,
+              'includesFuel': includesFuel,
+              'text': text,
+            }),
+          )
+          .timeout(_timeout);
       if (response.statusCode != 200) {
         return (
           unavailable: false,
