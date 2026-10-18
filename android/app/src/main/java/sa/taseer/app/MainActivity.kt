@@ -12,10 +12,14 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
+import org.json.JSONObject
 
 class MainActivity : AppCompatActivity() {
     private lateinit var webView: WebView
+    private lateinit var billing: BillingGate
     private var handlingBack = false
+    private var pageReady = false
+    private val pendingPayloads = mutableListOf<String>()
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,7 +41,8 @@ class MainActivity : AppCompatActivity() {
             displayZoomControls = false
             textZoom = (resources.configuration.fontScale * 100).toInt().coerceIn(80, 160)
         }
-        webView.addJavascriptInterface(ExternalLinks(this), "TaseerAndroid")
+        billing = BillingGate(this, ::deliverPurchase)
+        webView.addJavascriptInterface(Bridge(this), "TaseerAndroid")
         webView.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
                 if (!request.isForMainFrame) return false
@@ -48,12 +53,21 @@ class MainActivity : AppCompatActivity() {
                 }
                 return false
             }
+
+            override fun onPageStarted(view: WebView, url: String, favicon: android.graphics.Bitmap?) {
+                pageReady = false
+            }
+
+            override fun onPageFinished(view: WebView, url: String) {
+                flushPayloads()
+            }
         }
 
         val restored = savedInstanceState?.let { webView.restoreState(it) } != null
         if (!restored) {
             webView.loadUrl(ASSET_URL)
         }
+        billing.start()
 
         onBackPressedDispatcher.addCallback(
             this,
@@ -75,6 +89,16 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
+    override fun onResume() {
+        super.onResume()
+        if (::billing.isInitialized) billing.refreshOwned()
+    }
+
+    override fun onDestroy() {
+        if (::billing.isInitialized) billing.end()
+        super.onDestroy()
+    }
+
     override fun onSaveInstanceState(outState: Bundle) {
         webView.saveState(outState)
         super.onSaveInstanceState(outState)
@@ -90,11 +114,38 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private class ExternalLinks(private val activity: MainActivity) {
+    private fun deliverPurchase(json: String) {
+        webView.post {
+            if (!pageReady) {
+                pendingPayloads.add(json)
+                return@post
+            }
+            dispatchPurchase(json)
+        }
+    }
+
+    private fun flushPayloads() {
+        pageReady = true
+        val queued = pendingPayloads.toList()
+        pendingPayloads.clear()
+        queued.forEach(::dispatchPurchase)
+    }
+
+    private fun dispatchPurchase(json: String) {
+        val quoted = JSONObject.quote(json)
+        webView.evaluateJavascript("window.taseerOnPurchase && window.taseerOnPurchase($quoted)", null)
+    }
+
+    private class Bridge(private val activity: MainActivity) {
         @JavascriptInterface
         fun open(url: String) {
             val uri = Uri.parse(url)
             activity.runOnUiThread { activity.openExternal(uri) }
+        }
+
+        @JavascriptInterface
+        fun purchase(productId: String) {
+            activity.runOnUiThread { activity.billing.purchase(productId) }
         }
     }
 

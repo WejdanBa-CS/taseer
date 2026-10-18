@@ -8,6 +8,8 @@ const state = {
   yearLabel: null,
   part: null,
   quote: "",
+  unlockedKey: "",
+  payError: "",
 };
 
 const STEP_LABELS = ["المدينة", "السيارة", "المشكلة", "السعر"];
@@ -135,6 +137,7 @@ function persist() {
         yearLabel: state.yearLabel,
         part: state.part,
         quote: state.quote,
+        unlockedKey: state.unlockedKey,
       })
     );
   } catch (error) {
@@ -158,6 +161,7 @@ function restore() {
     state.yearLabel = saved.yearLabel || null;
     state.part = saved.part || null;
     state.quote = typeof saved.quote === "string" ? saved.quote : "";
+    state.unlockedKey = typeof saved.unlockedKey === "string" ? saved.unlockedKey : "";
     state.carStage = saved.carStage || "brand";
     state.step = Number.isInteger(saved.step) ? saved.step : 0;
     if (!state.city) state.step = 0;
@@ -409,6 +413,15 @@ function renderProblem() {
   const lead = document.createElement("p");
   lead.className = "lead";
   lead.textContent = `${model.name} ${state.yearLabel}. القطع الظاهرة هي اللي لها سعر في قائمة الوكيل.`;
+  const symptom = document.createElement("input");
+  symptom.className = "search";
+  symptom.type = "search";
+  symptom.placeholder = "أو صف المشكلة: صرير فرامل، حرارة، تقطيع";
+  symptom.setAttribute("aria-label", "وصف المشكلة");
+  symptom.autocomplete = "off";
+  const hint = document.createElement("p");
+  hint.className = "note advisor-hint";
+  hint.hidden = true;
   const choices = document.createElement("div");
   choices.className = "choices";
   const parts = partsForSelection();
@@ -416,6 +429,31 @@ function renderProblem() {
     panel.append(lead, emptyNote("ما فيه سعر منشور لهالسيارة في القوائم الحالية."));
     return;
   }
+  symptom.addEventListener("input", () => {
+    hint.replaceChildren();
+    const match = window.TASEER_ADVICE.matchSymptom(symptom.value, parts);
+    if (!match) {
+      hint.hidden = true;
+      return;
+    }
+    hint.hidden = false;
+    if (!match.part) {
+      hint.textContent = "المستشار ما لقى لهالقطعة سعر منشور على هالسنة.";
+      return;
+    }
+    hint.append(document.createTextNode(`المستشار يرشّح ${match.part.name}. `));
+    const pick = document.createElement("button");
+    pick.type = "button";
+    pick.className = "linkish";
+    pick.textContent = "اختارها";
+    pick.addEventListener("click", () => {
+      state.part = match.part.id;
+      state.quote = "";
+      state.step = 3;
+      render();
+    });
+    hint.append(pick);
+  });
   parts.forEach((part) => {
     choices.append(
       choice(part.name, "", () => {
@@ -426,21 +464,175 @@ function renderProblem() {
       })
     );
   });
-  panel.append(lead, choices);
+  panel.append(lead, symptom, hint, choices);
 }
 
-function verdict(quote, low, high) {
-  if (quote < low * 0.7) {
-    return ["ok", "غالباً قطعة تجارية، واسأل عن الضمان."];
+const ACCESS_KEY = "taseer-access";
+const TOKEN_KEY = "taseer-tokens";
+
+function readAccess() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(ACCESS_KEY) || "");
+    return {
+      credits: Number(parsed.credits) || 0,
+      monthUntil: Number(parsed.monthUntil) || 0,
+    };
+  } catch (error) {
+    return { credits: 0, monthUntil: 0 };
   }
-  if (quote <= high) {
-    return ["ok", "قريب من سعر القطعة الأصلية. هذا قبل الأجرة."];
-  }
-  if (quote <= high * 1.5) {
-    return ["warn", "أعلى من السعر المنشور. اطلب تفصيل القطعة والأجرة كل واحدة بسعرها."];
-  }
-  return ["bad", "أعلى بكثير. لا توافق قبل ما تشوف الفاتورة مفصّلة."];
 }
+
+function writeAccess(access) {
+  localStorage.setItem(ACCESS_KEY, JSON.stringify(access));
+}
+
+function monthActive(access) {
+  return access.monthUntil > Date.now();
+}
+
+function takeAccess(key) {
+  if (state.unlockedKey === key) return true;
+  const access = readAccess();
+  if (monthActive(access)) return true;
+  if (access.credits > 0) {
+    access.credits -= 1;
+    writeAccess(access);
+    return true;
+  }
+  return false;
+}
+
+function readTokens() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(TOKEN_KEY) || "[]");
+    return Array.isArray(parsed) ? parsed.filter((token) => typeof token === "string") : [];
+  } catch (error) {
+    return [];
+  }
+}
+
+function grantAccess(event) {
+  const tokens = readTokens();
+  const access = readAccess();
+  if (event.kind === "month") access.monthUntil = Date.now() + 30 * 24 * 60 * 60 * 1000;
+  if (event.token && tokens.includes(event.token)) {
+    writeAccess(access);
+    return;
+  }
+  if (event.token) {
+    tokens.push(event.token);
+    localStorage.setItem(TOKEN_KEY, JSON.stringify(tokens.slice(-40)));
+  }
+  if (event.kind !== "month") access.credits += 1;
+  writeAccess(access);
+}
+
+function loadingNote(text) {
+  const note = document.createElement("p");
+  note.className = "note";
+  note.textContent = text;
+  return note;
+}
+
+function adviceCard(advice) {
+  const card = document.createElement("article");
+  card.className = "advice";
+  const title = document.createElement("h2");
+  title.textContent = "المستشار";
+  const headline = document.createElement("p");
+  headline.className = `verdict ${advice.tone === "low" ? "warn" : advice.tone === "extreme" ? "bad" : "warn"}`;
+  headline.textContent = advice.headline;
+  const script = document.createElement("p");
+  script.textContent = advice.script;
+  card.append(title, headline, script);
+  if (advice.questions.length) {
+    const list = document.createElement("ul");
+    advice.questions.forEach((question) => {
+      const item = document.createElement("li");
+      item.textContent = question;
+      list.append(item);
+    });
+    card.append(list);
+  }
+  return card;
+}
+
+function paywall(tone, quote, low, high) {
+  const box = document.createElement("div");
+  box.className = "paywall";
+  const title = document.createElement("h2");
+  title.textContent = "المستشار";
+  const headline = document.createElement("p");
+  headline.className = tone === "extreme" ? "verdict bad" : "verdict warn";
+  headline.textContent =
+    tone === "low"
+      ? "هذا الرقم أقل من المعتاد لقطعة أصلية."
+      : "هذا الرقم يحتاج وقفة قبل ما توافق.";
+  const lead = document.createElement("p");
+  lead.textContent =
+    "سعر القطعة المنشور قدامك. كلام الورشة والأسئلة اللي تسألها قبل الموافقة تنفتح بالدفع.";
+  const gap = document.createElement("p");
+  gap.className = "note";
+  const amount = document.createElement("bdi");
+  amount.dir = "ltr";
+  amount.textContent = money(tone === "low" ? low - quote : quote - high);
+  gap.append(
+    document.createTextNode(tone === "low" ? "الفرق حوالي " : "الزيادة حوالي "),
+    amount,
+    document.createTextNode(
+      tone === "low"
+        ? " ريال تحت السعر المنشور. المستشار يجهّز الأسئلة قبل ما تقبل القطعة."
+        : " ريال فوق السعر المنشور. المستشار يكتب لك الكلام قبل الموافقة."
+    )
+  );
+  box.append(title, headline, lead, gap);
+  window.TASEER_OFFERS.forEach((offer, index) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = index === 0 ? "primary" : "secondary";
+    button.textContent = offer.label;
+    button.addEventListener("click", () => requestPurchase(offer.id));
+    box.append(button);
+  });
+  const fine = document.createElement("p");
+  fine.className = "note";
+  fine.textContent = "9 ريال لهالنصيحة، أو 29 ريال للشهر لكل سياراتك. تقدر تكتفي بسعر القطعة بدون ما تدفع.";
+  box.append(fine);
+  if (state.payError) {
+    const error = document.createElement("p");
+    error.className = "verdict warn";
+    error.textContent = state.payError;
+    box.append(error);
+  }
+  return box;
+}
+
+function requestPurchase(productId) {
+  state.payError = "";
+  const bridge = window.TaseerAndroid;
+  if (bridge && typeof bridge.purchase === "function") {
+    bridge.purchase(productId);
+    return;
+  }
+  state.payError = "الدفع يتم من تطبيق أندرويد بعد ربطه بمتجر بلاي.";
+  if (state.step === 3) render();
+}
+
+window.taseerOnPurchase = function (payload) {
+  let event = payload;
+  try {
+    if (typeof payload === "string") event = JSON.parse(payload);
+  } catch (error) {
+    event = null;
+  }
+  if (!event || event.ok === false) {
+    state.payError = (event && event.message) || "ما اكتمل الدفع. النصيحة لسا مقفلة.";
+  } else {
+    state.payError = "";
+    grantAccess(event);
+  }
+  if (state.step === 3) render();
+};
 
 function renderResult() {
   panel.replaceChildren();
@@ -515,29 +707,68 @@ function renderResult() {
   button.className = "primary";
   button.type = "submit";
   button.textContent = "قارني";
-  const verdictBox = document.createElement("p");
-  verdictBox.hidden = true;
+  const resultHost = document.createElement("div");
   const paintVerdict = () => {
     const quote = parseQuote(input.value);
     state.quote = input.value;
-    persist();
+    resultHost.replaceChildren();
     if (!Number.isFinite(quote) || quote <= 0) {
-      verdictBox.hidden = false;
+      const verdictBox = document.createElement("p");
       verdictBox.className = "verdict warn";
       verdictBox.textContent = "اكتب السعر رقماً.";
+      resultHost.append(verdictBox);
+      persist();
       return;
     }
-    const [tone, text] = verdict(quote, low, high);
-    verdictBox.hidden = false;
-    verdictBox.className = `verdict ${tone}`;
-    verdictBox.textContent = text;
+    const adviceInput = {
+      quote,
+      low,
+      high,
+      part: state.part,
+      partName: partName(state.part),
+      city: state.city.name,
+      car: `${brandName(state.brand)} ${model.name} ${state.yearLabel}`,
+    };
+    const tone = window.TASEER_ADVICE.toneOf(quote, low, high);
+    if (tone === "close") {
+      const advice = window.TASEER_ADVICE.localAdvice(adviceInput);
+      const verdictBox = document.createElement("p");
+      verdictBox.className = "verdict ok";
+      verdictBox.textContent = advice.headline;
+      const extra = document.createElement("p");
+      extra.className = "note";
+      extra.textContent = "الفرق على القطعة صغير، فما يحتاج تدفع. الأجرة غير داخلة.";
+      resultHost.append(verdictBox, extra);
+      persist();
+      return;
+    }
+    const key = `${state.part}|${quote}`;
+    if (state.unlockedKey === key || takeAccess(key)) {
+      state.unlockedKey = key;
+      state.payError = "";
+      const reveal = (advice) => {
+        if (state.unlockedKey !== key) return;
+        resultHost.replaceChildren(adviceCard(advice));
+      };
+      if (window.TASEER_AI && window.TASEER_AI.endpoint) {
+        resultHost.append(loadingNote("المستشار يراجع الرقم..."));
+        persist();
+        window.TASEER_ADVICE.advise(adviceInput).then(reveal);
+        return;
+      }
+      reveal(window.TASEER_ADVICE.localAdvice(adviceInput));
+      persist();
+      return;
+    }
+    resultHost.append(paywall(tone, quote, low, high));
+    persist();
   };
   quoteForm.append(input, button);
   quoteForm.addEventListener("submit", (event) => {
     event.preventDefault();
     paintVerdict();
   });
-  quoteBox.append(quoteTitle, quoteForm, verdictBox);
+  quoteBox.append(quoteTitle, quoteForm, resultHost);
   if (state.quote) paintVerdict();
 
   panel.append(context, price, list, note, sourceLine, quoteBox);
