@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 
 class PurchaseEvent {
@@ -25,13 +26,25 @@ class BillingService {
   static const monthId = 'advice_month';
   static const productIds = {onceId, monthId};
 
-  final _iap = InAppPurchase.instance;
+  /// Store billing is only wired on Android/iOS. Web/desktop use the debug grant path.
+  bool get _storeSupported =>
+      !kIsWeb &&
+      (defaultTargetPlatform == TargetPlatform.android ||
+          defaultTargetPlatform == TargetPlatform.iOS);
+
+  InAppPurchase? get _iap => _storeSupported ? InAppPurchase.instance : null;
   StreamSubscription<List<PurchaseDetails>>? _sub;
   void Function(PurchaseEvent event)? onEvent;
 
   Future<void> start(void Function(PurchaseEvent event) handler) async {
     onEvent = handler;
-    _sub = _iap.purchaseStream.listen(_onPurchases, onError: (_) {});
+    final iap = _iap;
+    if (iap == null) return;
+    try {
+      _sub = iap.purchaseStream.listen(_onPurchases, onError: (_) {});
+    } catch (_) {
+      // Platform plugin missing (e.g. unsupported target) — stay on debug grants.
+    }
   }
 
   Future<void> dispose() async {
@@ -51,12 +64,17 @@ class BillingService {
       );
       return;
     }
-    final available = await _iap.isAvailable();
+    final iap = _iap;
+    if (iap == null) {
+      _grantDebug(productId);
+      return;
+    }
+    final available = await iap.isAvailable();
     if (!available) {
       _grantDebug(productId);
       return;
     }
-    final response = await _iap.queryProductDetails(productIds);
+    final response = await iap.queryProductDetails(productIds);
     if (response.error != null || response.productDetails.isEmpty) {
       _grantDebug(productId);
       return;
@@ -79,8 +97,8 @@ class BillingService {
     }
     final param = PurchaseParam(productDetails: product);
     final ok = productId == onceId
-        ? await _iap.buyConsumable(purchaseParam: param)
-        : await _iap.buyNonConsumable(purchaseParam: param);
+        ? await iap.buyConsumable(purchaseParam: param)
+        : await iap.buyNonConsumable(purchaseParam: param);
     if (!ok) {
       onEvent?.call(
         PurchaseEvent(
@@ -107,6 +125,8 @@ class BillingService {
   }
 
   Future<void> _onPurchases(List<PurchaseDetails> purchases) async {
+    final iap = _iap;
+    if (iap == null) return;
     for (final purchase in purchases) {
       if (purchase.status == PurchaseStatus.pending) continue;
       final productId = purchase.productID;
@@ -135,7 +155,7 @@ class BillingService {
         );
       }
       if (purchase.pendingCompletePurchase) {
-        await _iap.completePurchase(purchase);
+        await iap.completePurchase(purchase);
       }
     }
   }
