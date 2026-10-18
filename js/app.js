@@ -252,7 +252,7 @@ function backBar(title) {
   const heading = document.createElement("h1");
   heading.textContent = title;
   bar.append(heading);
-  if (state.step > 0 || state.screen === "garage" || state.screen === "costs") {
+  if (state.step > 0 || state.screen === "garage" || state.screen === "costs" || state.screen === "login") {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "linkish";
@@ -389,10 +389,77 @@ function arabicCount(count, one, dual, plural) {
   return `${count} ${plural}`;
 }
 
+function isLoggedIn() {
+  return window.TASEER_AUTH.isLoggedIn();
+}
+
+function openLogin() {
+  state.screen = "login";
+  render();
+}
+
+function lockedGate(message, sample) {
+  const wrap = document.createElement("div");
+  wrap.className = "locked";
+  const veil = document.createElement("div");
+  veil.className = "locked-veil";
+  veil.setAttribute("aria-hidden", "true");
+  veil.append(sample);
+  const gate = document.createElement("div");
+  gate.className = "locked-gate";
+  const text = document.createElement("p");
+  text.textContent = message;
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "primary";
+  button.textContent = "سجّل دخولك";
+  button.addEventListener("click", openLogin);
+  gate.append(text, button);
+  wrap.append(veil, gate);
+  return wrap;
+}
+
+function fakeCommentSample() {
+  const box = document.createElement("div");
+  box.style.display = "grid";
+  box.style.gap = "8px";
+  [
+    { price: "88,500 ريال · بدون بنزين · جدة", text: "سعرها مناسب بعد المفاوضة والوكالة واضحة." },
+    { price: "91,200 ريال · يشمل البنزين · الرياض", text: "السعر شامل تانكي بنزين وما حسيت زيادة." },
+  ].forEach((item) => {
+    const card = document.createElement("article");
+    card.className = "comment";
+    const head = document.createElement("p");
+    head.className = "comment-price";
+    head.textContent = item.price;
+    const body = document.createElement("p");
+    body.textContent = item.text;
+    card.append(head, body);
+    box.append(card);
+  });
+  return box;
+}
+
+function fakeCrowdSample() {
+  const box = document.createElement("div");
+  box.style.display = "grid";
+  box.style.gap = "8px";
+  box.append(
+    crowdAmount("متوسط المستخدمين ", 1180, " ريال من 12 تقارير. هذا مو سعر الوكيل."),
+    crowdAmount("في المدينة: ", 1095, " ريال من 5 تقارير.")
+  );
+  return box;
+}
+
 function priceLine(notes) {
+  if (!notes.length) return "";
+  if (!isLoggedIn()) {
+    return notes.some((note) => note.price != null)
+      ? "أسعار وتعليقات — سجّل دخولك"
+      : "تعليقات — سجّل دخولك";
+  }
   const priced = notes.filter((note) => note.price != null);
   if (!priced.length) {
-    if (!notes.length) return "";
     return arabicCount(notes.length, "تعليق", "تعليقان", "تعليقات");
   }
   const prices = priced.map((note) => note.price).sort((a, b) => a - b);
@@ -461,7 +528,9 @@ function paintModelLists() {
   else if (state.carNotesStatus === "unavailable") {
     status.textContent = "فلتر الميزانية والتعليقات يحتاجان اتصال بخادم التقارير.";
   } else if (state.carNotesStatus === "offline") status.textContent = "ما قدرنا نجيب التعليقات. ارجع وحاول مرة ثانية.";
-  else status.textContent = "الفلتر على أسعار كتبها المستخدمون، مو سعر الوكيل.";
+  else if (!isLoggedIn()) {
+    status.textContent = "الفلتر يشتغل، لكن أسعار وتعليقات المستخدمين تظهر بعد تسجيل الدخول.";
+  } else status.textContent = "الفلتر على أسعار كتبها المستخدمون، مو سعر الوكيل.";
 }
 
 let carNotesRequest = 0;
@@ -552,6 +621,16 @@ function paintCommentList(list) {
     list.append(emptyNote("ما قدرنا نجيب التعليقات."));
     return;
   }
+  if (!isLoggedIn()) {
+    if (!notes.length) {
+      list.append(emptyNote("كن أول من يعلق بعد تسجيل الدخول."));
+      return;
+    }
+    list.append(
+      lockedGate("سجّل دخولك عشان تشوف تعليقات المستخدمين وأسعارهم", fakeCommentSample())
+    );
+    return;
+  }
   if (!notes.length) {
     list.append(emptyNote("كن أول من يعلق على هالسيارة."));
     return;
@@ -571,6 +650,20 @@ function prefillCommentForm() {
 }
 
 function commentForm(model) {
+  if (!isLoggedIn()) {
+    const locked = document.createElement("div");
+    locked.className = "quote";
+    const note = document.createElement("p");
+    note.className = "hint";
+    note.textContent = "تعليقك على السيارة ينشر بعد تسجيل الدخول.";
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "secondary";
+    button.textContent = "سجّل دخولك للتعليق";
+    button.addEventListener("click", openLogin);
+    locked.append(note, button);
+    return locked;
+  }
   const form = document.createElement("form");
   form.id = "car-comment-form";
   form.className = "quote";
@@ -613,6 +706,10 @@ function commentForm(model) {
   });
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
+    if (!isLoggedIn()) {
+      openLogin();
+      return;
+    }
     const raw = price.value;
     const hasPrice = raw.trim() !== "";
     const amount = parseQuote(raw);
@@ -673,7 +770,9 @@ function renderCarComments(model) {
   title.textContent = `تعليقات على ${model.name}`;
   const lead = document.createElement("p");
   lead.className = "hint";
-  lead.textContent = "هنا سعر السيارة من المستخدم، وإذا كان يشمل البنزين. سعر قطعة الوكيل يبقى في الخطوة الجاية.";
+  lead.textContent = isLoggedIn()
+    ? "هنا سعر السيارة من المستخدم، وإذا كان يشمل البنزين. سعر قطعة الوكيل يبقى في الخطوة الجاية."
+    : "تعليقات المستخدمين وأسعارهم تظهر بعد تسجيل الدخول. سعر قطعة الوكيل يبقى ظاهر في الخطوة الجاية.";
   const list = document.createElement("div");
   list.id = "comment-list";
   wrap.append(title, lead, list, commentForm(model));
@@ -1108,13 +1207,14 @@ function renderResult() {
       if (!stats || !stats.ready || !latestAdviceInput || latestAdviceInput.quote !== quote) return;
       if (!resultHost.querySelector(".advice")) return;
       if (`${state.part}|${latestAdviceInput.quote}` !== state.unlockedKey) return;
+      const showCrowd = isLoggedIn();
       resultHost.replaceChildren(
         adviceCard(
           window.TASEER_ADVICE.localAdvice({
             ...latestAdviceInput,
-            crowdReady: true,
-            crowdAverage: stats.average,
-            crowdCount: stats.count,
+            crowdReady: showCrowd,
+            crowdAverage: showCrowd ? stats.average : null,
+            crowdCount: showCrowd ? stats.count : 0,
           })
         )
       );
@@ -1204,6 +1304,12 @@ function paintCrowd(host, stats) {
   }
   if (stats.accepted === false) host.append(crowdNote("هذا الرقم بعيد، فما دخل في متوسط المستخدمين."));
   if (stats.ready && Number.isFinite(stats.average)) {
+    if (!isLoggedIn()) {
+      host.append(
+        lockedGate("سجّل دخولك عشان تشوف متوسط أسعار المستخدمين", fakeCrowdSample())
+      );
+      return;
+    }
     host.append(
       crowdAmount(
         "متوسط المستخدمين ",
@@ -1222,7 +1328,9 @@ function paintCrowd(host, stats) {
   host.append(
     crowdNote(
       count
-        ? `تقارير المستخدمين لهالقطعة: ${count} من ${needed}. بعدها يطلع المتوسط.`
+        ? isLoggedIn()
+          ? `تقارير المستخدمين لهالقطعة: ${count} من ${needed}. بعدها يطلع المتوسط.`
+          : `فيه تقارير للمستخدمين. لما يكتمل العدد سجّل دخولك عشان تشوف المتوسط.`
         : `اكتب سعر الورشة. متوسط المستخدمين يطلع بعد ${needed} تقارير لنفس القطعة.`
     )
   );
@@ -1717,8 +1825,88 @@ function renderGarageOpen(garage, now) {
   panel.append(wrap);
 }
 
+function renderLogin() {
+  panel.replaceChildren();
+  const session = window.TASEER_AUTH.read();
+  panel.append(backBar(session ? "حسابك" : "تسجيل الدخول"));
+  const lead = document.createElement("p");
+  lead.className = "lead";
+  lead.textContent = session
+    ? "أنت داخل. تقدر تشوف تعليقات المستخدمين ومتوسط أسعار الورشة. سعر قطعة الوكيل يبقى مجاني للكل."
+    : "سجّل دخولك عشان تشوف تعليقات السيارات ومتوسط أسعار المستخدمين. سعر قطعة الوكيل يبقى ظاهر ومجاني.";
+  if (session) {
+    const card = document.createElement("div");
+    card.className = "note";
+    card.append(
+      document.createTextNode(`${session.name} · `),
+      Object.assign(document.createElement("bdi"), { dir: "ltr", textContent: session.phone })
+    );
+    const out = document.createElement("button");
+    out.type = "button";
+    out.className = "secondary";
+    out.textContent = "تسجيل الخروج";
+    out.addEventListener("click", () => {
+      window.TASEER_AUTH.logout();
+      paintAuthButton();
+      state.screen = "prices";
+      render();
+    });
+    panel.append(lead, card, out);
+    return;
+  }
+  const form = document.createElement("form");
+  form.className = "login quote";
+  const nameLabel = document.createElement("label");
+  nameLabel.htmlFor = "auth-name";
+  nameLabel.textContent = "الاسم";
+  const name = document.createElement("input");
+  name.id = "auth-name";
+  name.className = "search";
+  name.autocomplete = "name";
+  name.required = true;
+  name.placeholder = "اسمك";
+  const phoneLabel = document.createElement("label");
+  phoneLabel.htmlFor = "auth-phone";
+  phoneLabel.textContent = "رقم الجوال";
+  const phone = document.createElement("input");
+  phone.id = "auth-phone";
+  phone.className = "search";
+  phone.inputMode = "tel";
+  phone.autocomplete = "tel";
+  phone.required = true;
+  phone.placeholder = "05xxxxxxxx";
+  phone.dir = "ltr";
+  const submit = document.createElement("button");
+  submit.type = "submit";
+  submit.className = "primary";
+  submit.textContent = "دخول";
+  const status = document.createElement("p");
+  status.className = "hint";
+  status.setAttribute("role", "status");
+  form.append(nameLabel, name, phoneLabel, phone, submit, status);
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const result = window.TASEER_AUTH.login(name.value, phone.value);
+    if (!result.ok) {
+      status.textContent = result.message;
+      return;
+    }
+    paintAuthButton();
+    state.screen = "prices";
+    render();
+  });
+  panel.append(lead, form);
+}
+
+function paintAuthButton() {
+  const button = document.querySelector("#auth-btn");
+  if (!button) return;
+  const session = window.TASEER_AUTH.read();
+  button.textContent = session ? "حسابي" : "دخول";
+}
+
 function taseerGoBack() {
-  if (state.screen === "garage" || state.screen === "costs") {
+  if (state.screen === "garage" || state.screen === "costs" || state.screen === "login") {
     state.screen = "prices";
     render();
     return true;
@@ -1740,10 +1928,12 @@ function taseerGoBack() {
 
 function render() {
   paintAd();
-  if (state.screen === "garage" || state.screen === "costs") {
+  paintAuthButton();
+  if (state.screen === "garage" || state.screen === "costs" || state.screen === "login") {
     steps.hidden = true;
     if (state.screen === "garage") renderGarage();
-    else renderCosts();
+    else if (state.screen === "costs") renderCosts();
+    else renderLogin();
     if (booted) {
       const heading = panel.querySelector("h1");
       if (heading) {
@@ -1778,6 +1968,10 @@ document.addEventListener("click", (event) => {
 });
 
 window.taseerGoBack = taseerGoBack;
+document.querySelector("#auth-btn").addEventListener("click", () => {
+  state.screen = "login";
+  render();
+});
 document.querySelector("#my-car").addEventListener("click", () => {
   state.screen = "garage";
   render();
@@ -1788,4 +1982,5 @@ document.querySelector("#cost-list").addEventListener("click", () => {
 });
 restore();
 renderSources();
+paintAuthButton();
 render();

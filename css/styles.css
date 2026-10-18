@@ -311,6 +311,39 @@ button.secondary:active { background: #e7f2ec; }
 .tick input { width: 22px; height: 22px; accent-color: var(--green); }
 #model-rest { display: grid; gap: 8px; margin-top: 8px; }
 
+.locked {
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  min-height: 120px;
+}
+.locked-veil {
+  filter: blur(8px);
+  user-select: none;
+  pointer-events: none;
+  transform: scale(1.02);
+}
+.locked-gate {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-content: center;
+  gap: 10px;
+  padding: 18px 16px;
+  background: rgba(244, 239, 230, 0.62);
+  text-align: center;
+}
+.locked-gate p {
+  margin: 0;
+  font-weight: 700;
+  color: var(--green);
+  line-height: 1.45;
+}
+.locked-gate button.primary { max-width: 240px; margin-inline: auto; }
+.login { display: grid; gap: 10px; }
+.login label { font-weight: 600; }
+
 button.primary {
   width: 100%;
   min-height: 52px;
