@@ -339,7 +339,22 @@ button.primary:active { background: var(--green-2); }
 .ad-slot[hidden] { display: none; }
 .ad-slot span { color: var(--copper-deep); font-size: 0.75rem; font-weight: 700; }
 .ad-slot p { margin: 0; color: var(--muted); font-size: 0.92rem; }
-body.has-ad .shell { padding-bottom: 96px; }
+.updated {
+  position: fixed;
+  z-index: 6;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(390px, 100%);
+  margin: 0;
+  padding: 8px 14px calc(8px + env(safe-area-inset-bottom));
+  background: var(--green);
+  color: #f6e7d4;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-align: center;
+}
+.shell { padding-bottom: var(--bottom-ui, 108px); }
 .sources h2 { color: var(--muted); font-size: 0.95rem; font-weight: 600; }
 .sources ul { margin: 0; padding: 0 18px 0 0; }
 .sources li { margin-bottom: 10px; }

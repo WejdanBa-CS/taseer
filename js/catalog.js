@@ -71,6 +71,7 @@ window.TASEER_SOURCES = {
     name: "قائمة قطع غيار كيا السعودية",
     url: "https://www.kia.com/content/dam/kwcms/sa/en/files/service/Kia-Spare-Parts-Price-2509.pdf",
     note: "ملف الوكيل لشهر سبتمبر 2025. القائمة لا تذكر إن كان السعر قبل الضريبة أو بعدها.",
+    updated: "سبتمبر 2025",
   },
   victory: {
     name: "قائمة قطع غيار فيكتوري",
@@ -86,6 +87,7 @@ window.TASEER_SOURCES = {
     name: "أسعار وقود أرامكو داخل المملكة",
     url: "https://www.aramco.com/en/what-we-do/energy-products/retail-fuels",
     note: "سعر اللتر من صفحة أرامكو كما قرأناها في أكتوبر 2026: بنزين 91 و95 و98 والديزل.",
+    updated: "أكتوبر 2026",
   },
   commerce: {
     name: "إلزام وزارة التجارة بنشر أسعار القطع",

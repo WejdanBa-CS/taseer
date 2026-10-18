@@ -884,6 +884,37 @@ function paintAd() {
   const show = !subscribed && !nativeOwns;
   slot.hidden = !show;
   document.body.classList.toggle("has-ad", show);
+  const bar = document.querySelector("#price-updated");
+  if (bar) bar.textContent = priceUpdatedLabel();
+  requestAnimationFrame(() => {
+    const adHeight = show ? slot.offsetHeight : 0;
+    if (bar) bar.style.bottom = `${adHeight}px`;
+    const barHeight = bar ? bar.offsetHeight : 0;
+    document.documentElement.style.setProperty("--bottom-ui", `${adHeight + barHeight + 12}px`);
+  });
+}
+
+function priceUpdatedLabel() {
+  const sources = window.TASEER_SOURCES;
+  const kia = sources.kia.updated;
+  const fuel = sources.aramco.updated;
+  const sourceId = listedSource();
+  if (state.screen === "costs") {
+    if (sourceId === "victory") return `آخر تحديث للوقود: ${fuel}. قطع فيكتوري من صفحة الوكيل.`;
+    return `آخر تحديث: قطع الغيار ${kia} · الوقود ${fuel}`;
+  }
+  if (sourceId === "victory") return "أسعار فيكتوري كما نشرها الوكيل على صفحته.";
+  if (sourceId === "kia") return `آخر تحديث لأسعار القطع: ${kia}`;
+  return `آخر تحديث لأسعار القطع: ${kia}`;
+}
+
+function listedSource() {
+  if (state.brand && state.model && state.yearLabel && state.part) {
+    const row = selectedRows().find((item) => item.part === state.part);
+    if (row) return row.source;
+  }
+  if (state.brand === "kia" || state.brand === "victory") return state.brand;
+  return "";
 }
 
 function rememberCar() {
