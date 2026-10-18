@@ -1,4 +1,4 @@
-window.MIZAN_CITIES = [
+window.TASEER_CITIES = [
   { region: "الرياض", name: "الرياض" },
   { region: "الرياض", name: "الخرج" },
   { region: "الرياض", name: "الدوادمي" },
@@ -24,15 +24,15 @@ window.MIZAN_CITIES = [
   { region: "القصيم", name: "الرس" },
   { region: "القصيم", name: "البكيرية" },
   { region: "القصيم", name: "مدينة أخرى في القصيم" },
-  { region: "المنطقة الشرقية", name: "الدمام" },
-  { region: "المنطقة الشرقية", name: "الخبر" },
-  { region: "المنطقة الشرقية", name: "الظهران" },
-  { region: "المنطقة الشرقية", name: "الأحساء" },
-  { region: "المنطقة الشرقية", name: "الجبيل" },
-  { region: "المنطقة الشرقية", name: "حفر الباطن" },
-  { region: "المنطقة الشرقية", name: "القطيف" },
-  { region: "المنطقة الشرقية", name: "الخفجي" },
-  { region: "المنطقة الشرقية", name: "مدينة أخرى في الشرقية" },
+  { region: "الشرقية", name: "الدمام" },
+  { region: "الشرقية", name: "الخبر" },
+  { region: "الشرقية", name: "الظهران" },
+  { region: "الشرقية", name: "الأحساء" },
+  { region: "الشرقية", name: "الجبيل" },
+  { region: "الشرقية", name: "حفر الباطن" },
+  { region: "الشرقية", name: "القطيف" },
+  { region: "الشرقية", name: "الخفجي" },
+  { region: "الشرقية", name: "مدينة أخرى في الشرقية" },
   { region: "عسير", name: "أبها" },
   { region: "عسير", name: "خميس مشيط" },
   { region: "عسير", name: "بيشة" },
@@ -66,11 +66,12 @@ window.MIZAN_CITIES = [
   { region: "الجوف", name: "مدينة أخرى في الجوف" },
 ];
 
-window.MIZAN_SOURCES = {
+window.TASEER_SOURCES = {
   kia: {
     name: "قائمة قطع غيار كيا السعودية",
     url: "https://www.kia.com/content/dam/kwcms/sa/en/files/service/Kia-Spare-Parts-Price-2509.pdf",
     note: "ملف الوكيل لشهر سبتمبر 2025. القائمة لا تذكر إن كان السعر قبل الضريبة أو بعدها.",
+    updated: "سبتمبر 2025",
   },
   victory: {
     name: "قائمة قطع غيار فيكتوري",
@@ -81,6 +82,12 @@ window.MIZAN_SOURCES = {
     name: "متجر قطع تويوتا",
     url: "https://parts.toyota.com.sa/",
     note: "كتالوج مباشر حسب القطعة. ما انضاف للجدول لأنه ليس قائمة محملة مثل كيا وفيكتوري.",
+  },
+  aramco: {
+    name: "أسعار وقود أرامكو داخل المملكة",
+    url: "https://www.aramco.com/en/what-we-do/energy-products/retail-fuels",
+    note: "سعر اللتر من صفحة أرامكو كما قرأناها في أكتوبر 2026: بنزين 91 و95 و98 والديزل.",
+    updated: "أكتوبر 2026",
   },
   commerce: {
     name: "إلزام وزارة التجارة بنشر أسعار القطع",
