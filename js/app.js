@@ -690,6 +690,11 @@ function renderResult() {
   sourceLink.textContent = source.name;
   sourceLine.append(document.createTextNode("المصدر: "), sourceLink, document.createTextNode(`. ${source.note}`));
 
+  const crowdHost = document.createElement("div");
+  crowdHost.className = "crowd";
+  crowdHost.setAttribute("role", "status");
+  crowdHost.setAttribute("aria-live", "polite");
+
   const quoteBox = document.createElement("div");
   quoteBox.className = "compare";
   const quoteTitle = document.createElement("h2");
@@ -708,16 +713,47 @@ function renderResult() {
   button.type = "submit";
   button.textContent = "قارني";
   const resultHost = document.createElement("div");
+  let crowdTicket = 0;
+  let latestAdviceInput = null;
+  const refreshCrowd = (quote) => {
+    const ticket = ++crowdTicket;
+    window.TASEER_CROWD.sync({
+      brand: state.brand,
+      model: state.model,
+      yearLabel: state.yearLabel,
+      part: state.part,
+      city: state.city.name,
+      quote,
+    }).then((stats) => {
+      if (ticket !== crowdTicket) return;
+      paintCrowd(crowdHost, stats);
+      if (!stats || !stats.ready || !latestAdviceInput || latestAdviceInput.quote !== quote) return;
+      if (!resultHost.querySelector(".advice")) return;
+      if (`${state.part}|${latestAdviceInput.quote}` !== state.unlockedKey) return;
+      resultHost.replaceChildren(
+        adviceCard(
+          window.TASEER_ADVICE.localAdvice({
+            ...latestAdviceInput,
+            crowdReady: true,
+            crowdAverage: stats.average,
+            crowdCount: stats.count,
+          })
+        )
+      );
+    });
+  };
   const paintVerdict = () => {
     const quote = parseQuote(input.value);
     state.quote = input.value;
     resultHost.replaceChildren();
     if (!Number.isFinite(quote) || quote <= 0) {
+      latestAdviceInput = null;
       const verdictBox = document.createElement("p");
       verdictBox.className = "verdict warn";
       verdictBox.textContent = "اكتب السعر رقماً.";
       resultHost.append(verdictBox);
       persist();
+      refreshCrowd(NaN);
       return;
     }
     const adviceInput = {
@@ -729,6 +765,7 @@ function renderResult() {
       city: state.city.name,
       car: `${brandName(state.brand)} ${model.name} ${state.yearLabel}`,
     };
+    latestAdviceInput = adviceInput;
     const tone = window.TASEER_ADVICE.toneOf(quote, low, high);
     if (tone === "close") {
       const advice = window.TASEER_ADVICE.localAdvice(adviceInput);
@@ -740,6 +777,7 @@ function renderResult() {
       extra.textContent = "الفرق على القطعة صغير، فما يحتاج تدفع. الأجرة غير داخلة.";
       resultHost.append(verdictBox, extra);
       persist();
+      refreshCrowd(quote);
       return;
     }
     const key = `${state.part}|${quote}`;
@@ -754,14 +792,17 @@ function renderResult() {
         resultHost.append(loadingNote("المستشار يراجع الرقم..."));
         persist();
         window.TASEER_ADVICE.advise(adviceInput).then(reveal);
+        refreshCrowd(quote);
         return;
       }
       reveal(window.TASEER_ADVICE.localAdvice(adviceInput));
       persist();
+      refreshCrowd(quote);
       return;
     }
     resultHost.append(paywall(tone, quote, low, high));
     persist();
+    refreshCrowd(quote);
   };
   quoteForm.append(input, button);
   quoteForm.addEventListener("submit", (event) => {
@@ -770,8 +811,58 @@ function renderResult() {
   });
   quoteBox.append(quoteTitle, quoteForm, resultHost);
   if (state.quote) paintVerdict();
+  else refreshCrowd(NaN);
 
-  panel.append(context, price, list, note, sourceLine, quoteBox);
+  panel.append(context, price, list, note, sourceLine, crowdHost, quoteBox);
+}
+
+function paintCrowd(host, stats) {
+  host.replaceChildren();
+  if (!stats || stats.unavailable) return;
+  const needed = stats.needed || window.TASEER_CROWD.needed;
+  if (stats.offline) {
+    host.append(crowdNote("متوسط المستخدمين يبين لما يتصل التطبيق."));
+    return;
+  }
+  if (stats.accepted === false) host.append(crowdNote("هذا الرقم بعيد، فما دخل في متوسط المستخدمين."));
+  if (stats.ready && Number.isFinite(stats.average)) {
+    host.append(
+      crowdAmount(
+        "متوسط المستخدمين ",
+        stats.average,
+        ` ريال من ${stats.count} تقارير. هذا مو سعر الوكيل.`
+      )
+    );
+    if (stats.cityReady && Number.isFinite(stats.cityAverage)) {
+      host.append(crowdAmount(`في ${state.city.name}: `, stats.cityAverage, ` ريال من ${stats.cityCount} تقارير.`));
+    } else if (stats.cityCount > 0) {
+      host.append(crowdNote(`في ${state.city.name}: ${stats.cityCount} من ${needed} تقارير.`));
+    }
+    return;
+  }
+  const count = stats.count || 0;
+  host.append(
+    crowdNote(
+      count
+        ? `تقارير المستخدمين لهالقطعة: ${count} من ${needed}. بعدها يطلع المتوسط.`
+        : `اكتب سعر الورشة. متوسط المستخدمين يطلع بعد ${needed} تقارير لنفس القطعة.`
+    )
+  );
+}
+
+function crowdNote(text) {
+  const note = document.createElement("p");
+  note.className = "note";
+  note.textContent = text;
+  return note;
+}
+
+function crowdAmount(prefix, value, suffix) {
+  const row = document.createElement("p");
+  row.className = "crowd-avg";
+  row.dir = "rtl";
+  row.textContent = `${prefix}${money(value)}${suffix}`;
+  return row;
 }
 
 function taseerGoBack() {

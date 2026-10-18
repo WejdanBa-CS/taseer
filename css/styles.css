@@ -269,6 +269,17 @@ button.secondary {
 
 button.secondary:active { background: #e7f2ec; }
 
+.crowd { display: grid; gap: 8px; margin-top: 12px; }
+.crowd:empty { display: none; }
+.crowd-avg {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #eef3f1;
+  color: var(--green);
+  font-weight: 700;
+}
+
 .compare {
   margin-top: 18px;
   padding-top: 16px;

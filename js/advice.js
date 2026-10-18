@@ -76,13 +76,17 @@
     const published = rangeText(input.low, input.high);
     const asked = `${money(input.quote)} ريال`;
     const note = PART_NOTE[input.part] || "اسأل عن اسم القطعة كما هي في فاتورة الوكيل.";
+    const learned =
+      input.crowdReady && Number.isFinite(input.crowdAverage) && input.crowdCount
+        ? ` متوسط تقارير المستخدمين ${money(input.crowdAverage)} ريال من ${input.crowdCount} تقارير.`
+        : "";
     const gap = input.quote > input.high ? input.quote - input.high : input.low - input.quote;
 
     if (tone === "close") {
       return {
         tone,
         headline: "قريب من سعر القطعة الأصلية. هذا قبل الأجرة.",
-        script: `${input.partName} منشورة بـ ${published}. الرقم اللي كتبته ${asked}، والفرق عن حد السعر المنشور حوالي ${money(Math.abs(input.quote - (input.quote > input.high ? input.high : input.low)))} ريال. هذا مو سعر الورشة كامل. ${note}`,
+        script: `${input.partName} منشورة بـ ${published}. الرقم اللي كتبته ${asked}، والفرق عن حد السعر المنشور حوالي ${money(Math.abs(input.quote - (input.quote > input.high ? input.high : input.low)))} ريال. هذا مو سعر الورشة كامل. ${note}${learned}`,
         questions: [],
       };
     }
@@ -91,7 +95,7 @@
       return {
         tone,
         headline: "الرقم أقل بكثير من سعر القطعة الأصلية.",
-        script: `طلبوا ${asked} بينما ${input.partName} منشورة عند الوكيل بـ ${published}. الفرق حوالي ${money(gap)} ريال تحت السعر المنشور. غالباً القطعة تجارية أو الرقم ناقص. قول لهم: أبي أعرف من وين القطعة، وهل عليها ضمان مكتوب وفاتورة. إذا ما فيه ضمان، الرخص هنا غالي. ${note}`,
+        script: `طلبوا ${asked} بينما ${input.partName} منشورة عند الوكيل بـ ${published}. الفرق حوالي ${money(gap)} ريال تحت السعر المنشور. غالباً القطعة تجارية أو الرقم ناقص. قول لهم: أبي أعرف من وين القطعة، وهل عليها ضمان مكتوب وفاتورة. إذا ما فيه ضمان، الرخص هنا غالي. ${note}${learned}`,
         questions: [
           "القطعة أصلية من الوكيل ولا تجارية؟",
           "وين الضمان المكتوب وكم مدته؟",
@@ -108,7 +112,7 @@
         : "أعلى من السعر المنشور. اطلب تفصيل القطعة والأجرة.",
       script: `طلبوا ${asked} و${input.partName} منشورة بـ ${published}. الزيادة حوالي ${money(gap)} ريال قبل ما نحسب الأجرة. قول لهم بالحرف: ابغى سعر القطعة لحاله وسعر الأجرة لحاله، والقطعة أصلية بفاتورة. ${
         strong ? "إذا رفضوا التفصيل، لا توافق اليوم وخذ السيارة." : "إذا فصّلوا والزيادة كلها أجرة معقولة، القرار يرجع لك."
-      } ${note}`,
+      } ${note}${learned}`,
       questions: [
         "كم سعر القطعة لحاله وكم الأجرة لحاله؟",
         "هل القطعة أصلية وعليها فاتورة الوكيل؟",
@@ -137,10 +141,14 @@
       if (!response.ok) return local;
       const remote = await response.json();
       if (!remote || !remote.script) return local;
+      const script =
+        input.crowdReady && !String(remote.script).includes("متوسط تقارير المستخدمين")
+          ? `${remote.script} متوسط تقارير المستخدمين ${money(input.crowdAverage)} ريال من ${input.crowdCount} تقارير.`
+          : remote.script;
       return {
         tone: local.tone,
         headline: remote.headline || local.headline,
-        script: remote.script,
+        script,
         questions: Array.isArray(remote.questions) ? remote.questions : local.questions,
       };
     } catch (error) {
