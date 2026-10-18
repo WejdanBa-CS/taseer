@@ -11,12 +11,14 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.OnBackPressedCallback
+import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 import org.json.JSONObject
 
 class MainActivity : AppCompatActivity() {
     private lateinit var webView: WebView
     private lateinit var billing: BillingGate
+    private lateinit var ads: AdBanner
     private var handlingBack = false
     private var pageReady = false
     private val pendingPayloads = mutableListOf<String>()
@@ -42,6 +44,7 @@ class MainActivity : AppCompatActivity() {
             textZoom = (resources.configuration.fontScale * 100).toInt().coerceIn(80, 160)
         }
         billing = BillingGate(this, ::deliverPurchase)
+        ads = createAdBanner(this, findViewById<FrameLayout>(R.id.ad_holder))
         webView.addJavascriptInterface(Bridge(this), "TaseerAndroid")
         webView.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
@@ -95,6 +98,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
+        if (::ads.isInitialized) ads.destroy()
         if (::billing.isInitialized) billing.end()
         super.onDestroy()
     }
@@ -147,6 +151,9 @@ class MainActivity : AppCompatActivity() {
         fun purchase(productId: String) {
             activity.runOnUiThread { activity.billing.purchase(productId) }
         }
+
+        @JavascriptInterface
+        fun setAdsVisible(show: Boolean): Boolean = activity.ads.setVisible(show)
     }
 
     companion object {

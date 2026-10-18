@@ -77,11 +77,15 @@ button, input { font: inherit; touch-action: manipulation; }
 
 .brand { display: flex; gap: 12px; align-items: flex-start; }
 
+#my-car { margin-inline-start: auto; align-self: center; }
+
 .logo { width: 48px; height: 48px; flex: none; display: block; }
 
 .brand strong { display: block; font-size: 1.28rem; line-height: 1.2; }
 
 .brand p { margin: 3px 0 0; color: var(--muted); font-size: 0.92rem; line-height: 1.45; }
+
+.steps[hidden] { display: none; }
 
 .steps {
   display: grid;
@@ -260,11 +264,13 @@ button.linkish {
 button.secondary {
   width: 100%;
   min-height: 52px;
+  padding: 12px 14px;
   border-radius: 14px;
   border: 1px solid var(--green);
   background: #fff;
   color: var(--green);
   font-weight: 700;
+  line-height: 1.35;
 }
 
 button.secondary:active { background: #e7f2ec; }
@@ -304,6 +310,34 @@ button.primary:active { background: var(--green-2); }
 .panel a, .sources a { color: var(--green-2); }
 
 .sources { padding: 26px 0 max(40px, env(safe-area-inset-bottom)); }
+
+.perks { margin: 0; padding: 0 18px 0 0; }
+.perks li { margin: 6px 0; }
+
+.garage { display: grid; gap: 14px; }
+.garage h2 { margin: 0; font-size: 1rem; }
+.garage form { display: grid; gap: 8px; }
+.garage .row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; }
+.due { color: var(--bad); font-weight: 700; }
+.soon { color: var(--warn); font-weight: 700; }
+
+.ad-slot {
+  position: fixed;
+  z-index: 6;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(390px, 100%);
+  display: grid;
+  gap: 2px;
+  padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
+  background: #fff;
+  border-top: 1px solid var(--line);
+}
+.ad-slot[hidden] { display: none; }
+.ad-slot span { color: var(--copper-deep); font-size: 0.75rem; font-weight: 700; }
+.ad-slot p { margin: 0; color: var(--muted); font-size: 0.92rem; }
+body.has-ad .shell { padding-bottom: 96px; }
 .sources h2 { color: var(--muted); font-size: 0.95rem; font-weight: 600; }
 .sources ul { margin: 0; padding: 0 18px 0 0; }
 .sources li { margin-bottom: 10px; }

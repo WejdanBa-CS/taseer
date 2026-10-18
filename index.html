@@ -8,7 +8,7 @@
   <title>تسعير — سعر القطعة قبل الورشة</title>
   <link rel="stylesheet" href="css/styles.css">
 </head>
-<body>
+<body class="has-ad">
   <div class="shell">
     <header class="top">
       <div class="brand">
@@ -28,6 +28,7 @@
           <strong>تسعير</strong>
           <p>سعر القطعة الأصلية قبل ما توافق عند الورشة</p>
         </div>
+        <button type="button" id="my-car" class="linkish">سيارتي</button>
       </div>
       <ol class="steps" id="steps" aria-label="خطوات التقدير"></ol>
     </header>
@@ -41,12 +42,17 @@
       <ul id="source-list"></ul>
     </footer>
   </div>
+  <aside id="ad-slot" class="ad-slot" aria-label="إعلان">
+    <span>إعلان</span>
+    <p>مساحة إعلانية للورش والمتاجر. تختفي مع الاشتراك الشهري.</p>
+  </aside>
 
   <script src="js/parts.js"></script>
   <script src="js/catalog.js"></script>
   <script src="js/advice.js"></script>
   <script src="js/crowd-config.js"></script>
   <script src="js/crowd.js"></script>
+  <script src="js/plus.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

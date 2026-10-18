@@ -158,7 +158,7 @@
 
   window.TASEER_OFFERS = [
     { id: "advice_once", kind: "once", price: 9, label: "افتح النصيحة بـ 9 ريال" },
-    { id: "advice_month", kind: "month", price: 29, label: "شهر كامل بـ 29 ريال" },
+    { id: "advice_month", kind: "month", price: 29, label: "اشتراك 29 ريال: بدون إعلان وسجل السيارة" },
   ];
   window.TASEER_ADVICE = { matchSymptom, toneOf, localAdvice, advise };
 })();

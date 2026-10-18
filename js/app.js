@@ -10,6 +10,7 @@ const state = {
   quote: "",
   unlockedKey: "",
   payError: "",
+  screen: "prices",
 };
 
 const STEP_LABELS = ["المدينة", "السيارة", "المشكلة", "السعر"];
@@ -238,7 +239,7 @@ function backBar(title) {
   const heading = document.createElement("h1");
   heading.textContent = title;
   bar.append(heading);
-  if (state.step > 0) {
+  if (state.step > 0 || state.screen === "garage") {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "linkish";
@@ -596,7 +597,8 @@ function paywall(tone, quote, low, high) {
   });
   const fine = document.createElement("p");
   fine.className = "note";
-  fine.textContent = "9 ريال لهالنصيحة، أو 29 ريال للشهر لكل سياراتك. تقدر تكتفي بسعر القطعة بدون ما تدفع.";
+  fine.textContent =
+    "9 ريال تفتح نصيحة واحدة وما تشيل الإعلان. الاشتراك بـ 29 ريال يشيل الإعلان ويحفظ السيارة والتذكير والوقود والتأمين والتكاليف. سعر القطعة الأصلية يبقى مجاني.";
   box.append(fine);
   if (state.payError) {
     const error = document.createElement("p");
@@ -615,7 +617,7 @@ function requestPurchase(productId) {
     return;
   }
   state.payError = "الدفع يتم من تطبيق أندرويد بعد ربطه بمتجر بلاي.";
-  if (state.step === 3) render();
+  render();
 }
 
 window.taseerOnPurchase = function (payload) {
@@ -631,10 +633,11 @@ window.taseerOnPurchase = function (payload) {
     state.payError = "";
     grantAccess(event);
   }
-  if (state.step === 3) render();
+  render();
 };
 
 function renderResult() {
+  rememberCar();
   panel.replaceChildren();
   const model = currentModel();
   const lines = selectedRows()
@@ -865,7 +868,291 @@ function crowdAmount(prefix, value, suffix) {
   return row;
 }
 
+function paintAd() {
+  const slot = document.querySelector("#ad-slot");
+  if (!slot) return;
+  const subscribed = monthActive(readAccess());
+  let nativeOwns = false;
+  const bridge = window.TaseerAndroid;
+  if (bridge && typeof bridge.setAdsVisible === "function") {
+    try {
+      nativeOwns = bridge.setAdsVisible(!subscribed) === true;
+    } catch (error) {
+      nativeOwns = false;
+    }
+  }
+  const show = !subscribed && !nativeOwns;
+  slot.hidden = !show;
+  document.body.classList.toggle("has-ad", show);
+}
+
+function rememberCar() {
+  if (!monthActive(readAccess()) || !state.city || !state.brand || !state.model || !state.yearLabel) return;
+  const model = currentModel();
+  if (!model) return;
+  window.TASEER_PLUS.saveCar({
+    region: state.city.region,
+    city: state.city.name,
+    brand: state.brand,
+    model: state.model,
+    yearLabel: state.yearLabel,
+    brandName: brandName(state.brand),
+    modelName: model.name,
+  });
+}
+
+function currentCarRecord() {
+  if (!state.city || !state.brand || !state.model || !state.yearLabel) return null;
+  const model = currentModel();
+  if (!model) return null;
+  return {
+    region: state.city.region,
+    city: state.city.name,
+    brand: state.brand,
+    model: state.model,
+    yearLabel: state.yearLabel,
+    brandName: brandName(state.brand),
+    modelName: model.name,
+  };
+}
+
+function reminderText(status) {
+  if (status.state === "empty") return "حدد التاريخ عشان يبدأ التذكير.";
+  const days = Math.abs(status.days);
+  if (status.state === "due") return `متأخر بـ ${days} يوم.`;
+  if (status.state === "soon") return `بعد ${days} يوم. قرّب الموعد.`;
+  return `بعد ${days} يوم.`;
+}
+
+function renderGarage() {
+  panel.replaceChildren();
+  const subscribed = monthActive(readAccess());
+  const garage = window.TASEER_PLUS.read();
+  panel.append(backBar(subscribed ? "سيارتي" : "الاشتراك"));
+  if (!subscribed) {
+    renderGarageLock(garage);
+    return;
+  }
+  renderGarageOpen(garage, new Date());
+}
+
+function renderGarageLock(garage) {
+  const lead = document.createElement("p");
+  lead.className = "lead";
+  lead.textContent = "الاشتراك الشهري بـ 29 ريال يشيل الإعلان ويفتح سجل السيارة. سعر القطعة الأصلية يبقى مجاني، والنصيحة الواحدة بـ 9 ريال ما تشيل الإعلان.";
+  const list = document.createElement("ul");
+  list.className = "perks";
+  ["إزالة الإعلان", "حفظ نوع السيارة", "تذكير الصيانة حسب مرور الأشهر", "صرف الوقود الشهري", "التأمين وموعد تجديده", "حساب تكاليف الشهر"].forEach((item) => {
+    const li = document.createElement("li");
+    li.textContent = item;
+    list.append(li);
+  });
+  const saved = [];
+  if (garage.car) saved.push(`${garage.car.modelName} ${garage.car.yearLabel}`);
+  if (garage.fuelSar > 0) saved.push(`وقود ${money(garage.fuelSar)} ريال`);
+  if (garage.insuranceSar > 0) saved.push(`تأمين ${money(garage.insuranceSar)} ريال`);
+  const keep = document.createElement("p");
+  keep.className = "note";
+  keep.textContent = saved.length
+    ? `بياناتك محفوظة: ${saved.join("، ")}. الاشتراك يفتحها من جديد.`
+    : "ما ينحذف شيء إذا وقف الاشتراك. يرجع السجل مع التجديد.";
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "primary";
+  button.textContent = "اشترك بـ 29 ريال";
+  button.addEventListener("click", () => requestPurchase("advice_month"));
+  panel.append(lead, list, keep, button);
+  if (state.payError) panel.append(crowdNote(state.payError));
+}
+
+function renderGarageOpen(garage, now) {
+  const plus = window.TASEER_PLUS;
+  const wrap = document.createElement("div");
+  wrap.className = "garage";
+
+  const carTitle = document.createElement("h2");
+  carTitle.textContent = "السيارة المحفوظة";
+  wrap.append(carTitle);
+  const carLine = document.createElement("p");
+  carLine.className = "note";
+  carLine.textContent = garage.car
+    ? `${garage.car.brandName} ${garage.car.modelName} ${garage.car.yearLabel} · ${garage.car.city}`
+    : "لما تختار السيارة في التسعير وهي محفوظة في الاشتراك، تلقى نوعها هنا.";
+  wrap.append(carLine);
+  const pending = currentCarRecord();
+  if (pending && (!garage.car || garage.car.model !== pending.model || garage.car.yearLabel !== pending.yearLabel)) {
+    const save = document.createElement("button");
+    save.type = "button";
+    save.className = "secondary";
+    save.textContent = `احفظ ${pending.modelName} ${pending.yearLabel}`;
+    save.addEventListener("click", () => {
+      plus.saveCar(pending);
+      render();
+    });
+    wrap.append(save);
+  }
+  if (garage.car) {
+    const open = document.createElement("button");
+    open.type = "button";
+    open.className = "primary";
+    open.textContent = "أسعار قطعها";
+    open.addEventListener("click", () => {
+      const city = window.TASEER_CITIES.find(
+        (item) => item.name === garage.car.city && item.region === garage.car.region
+      );
+      if (!city) return;
+      state.city = city;
+      state.brand = garage.car.brand;
+      state.model = garage.car.model;
+      state.yearLabel = garage.car.yearLabel;
+      state.part = null;
+      state.quote = "";
+      state.carStage = "year";
+      state.step = 2;
+      state.screen = "prices";
+      render();
+    });
+    wrap.append(open);
+  }
+
+  const remindTitle = document.createElement("h2");
+  remindTitle.textContent = "تذكير الصيانة";
+  wrap.append(remindTitle);
+  const remindNote = document.createElement("p");
+  remindNote.className = "note";
+  remindNote.textContent = "تذكير تقريبي يحسب الأشهر من آخر موعد كتبته.";
+  wrap.append(remindNote);
+  plus.services.forEach((service) => {
+    const block = document.createElement("div");
+    const name = document.createElement("h2");
+    name.textContent = `${service.name} · كل ${service.months} أشهر`;
+    const status = plus.serviceStatus(garage.services[service.id], service.months, now);
+    const line = document.createElement("p");
+    line.className = status.state === "due" ? "due" : status.state === "soon" ? "soon" : "note";
+    line.textContent = reminderText(status);
+    const date = document.createElement("input");
+    date.type = "date";
+    date.dir = "ltr";
+    date.className = "search";
+    date.value = garage.services[service.id] || "";
+    date.setAttribute("aria-label", `آخر موعد ${service.name}`);
+    date.addEventListener("change", () => {
+      plus.setService(service.id, date.value);
+      render();
+    });
+    block.append(name, line, date);
+    wrap.append(block);
+  });
+
+  const fuelTitle = document.createElement("h2");
+  fuelTitle.textContent = "صرف الوقود الشهري";
+  const fuelForm = document.createElement("form");
+  const fuelInput = document.createElement("input");
+  fuelInput.className = "search";
+  fuelInput.inputMode = "decimal";
+  fuelInput.placeholder = "كم ريال في الشهر";
+  fuelInput.setAttribute("aria-label", "صرف الوقود الشهري");
+  fuelInput.value = garage.fuelSar ? String(garage.fuelSar) : "";
+  const fuelButton = document.createElement("button");
+  fuelButton.className = "primary";
+  fuelButton.type = "submit";
+  fuelButton.textContent = "احفظ الوقود";
+  fuelForm.append(fuelInput, fuelButton);
+  fuelForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    plus.setFuel(parseQuote(fuelInput.value));
+    render();
+  });
+  wrap.append(fuelTitle, fuelForm);
+
+  const coverTitle = document.createElement("h2");
+  coverTitle.textContent = "التأمين";
+  const coverStatus = plus.insuranceStatus(garage.insuranceRenew, now);
+  const coverLine = document.createElement("p");
+  coverLine.className = coverStatus.state === "due" ? "due" : coverStatus.state === "soon" ? "soon" : "note";
+  coverLine.textContent =
+    coverStatus.state === "empty" ? "اكتب المبلغ وموعد التجديد." : `تجديد التأمين ${reminderText(coverStatus)}`;
+  const coverForm = document.createElement("form");
+  const coverAmount = document.createElement("input");
+  coverAmount.className = "search";
+  coverAmount.inputMode = "decimal";
+  coverAmount.placeholder = "مبلغ التأمين السنوي";
+  coverAmount.setAttribute("aria-label", "مبلغ التأمين");
+  coverAmount.value = garage.insuranceSar ? String(garage.insuranceSar) : "";
+  const coverDate = document.createElement("input");
+  coverDate.type = "date";
+  coverDate.dir = "ltr";
+  coverDate.className = "search";
+  coverDate.setAttribute("aria-label", "تاريخ تجديد التأمين");
+  coverDate.value = garage.insuranceRenew || "";
+  const coverButton = document.createElement("button");
+  coverButton.className = "primary";
+  coverButton.type = "submit";
+  coverButton.textContent = "احفظ التأمين";
+  coverForm.append(coverAmount, coverDate, coverButton);
+  coverForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    plus.setInsurance(parseQuote(coverAmount.value), coverDate.value);
+    render();
+  });
+  wrap.append(coverTitle, coverLine, coverForm);
+
+  const costTitle = document.createElement("h2");
+  costTitle.textContent = "تكاليف هذا الشهر";
+  const total = plus.monthlyTotal(garage, now);
+  const totalLine = document.createElement("p");
+  totalLine.className = "crowd-avg";
+  totalLine.dir = "rtl";
+  totalLine.textContent = `المجموع ${money(total.total)} ريال. الوقود ${money(total.fuel)}، وحصة التأمين ${money(total.insurance)}، والمسجّل ${money(total.logged)}.`;
+  wrap.append(costTitle, totalLine);
+  garage.expenses
+    .filter((item) => item.month === total.month)
+    .forEach((item) => {
+      const row = document.createElement("div");
+      row.className = "row";
+      const label = document.createElement("span");
+      label.textContent = `${item.label} · ${money(item.amount)} ريال`;
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.className = "linkish";
+      remove.textContent = "حذف";
+      remove.addEventListener("click", () => {
+        plus.removeExpense(item.id);
+        render();
+      });
+      row.append(label, remove);
+      wrap.append(row);
+    });
+  const costForm = document.createElement("form");
+  const costLabel = document.createElement("input");
+  costLabel.className = "search";
+  costLabel.placeholder = "وصف المصروف";
+  costLabel.setAttribute("aria-label", "وصف المصروف");
+  const costAmount = document.createElement("input");
+  costAmount.className = "search";
+  costAmount.inputMode = "decimal";
+  costAmount.placeholder = "المبلغ";
+  costAmount.setAttribute("aria-label", "مبلغ المصروف");
+  const costButton = document.createElement("button");
+  costButton.className = "secondary";
+  costButton.type = "submit";
+  costButton.textContent = "أضف للتكلفة";
+  costForm.append(costLabel, costAmount, costButton);
+  costForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    plus.addExpense(costLabel.value, parseQuote(costAmount.value), now);
+    render();
+  });
+  wrap.append(costForm);
+  panel.append(wrap);
+}
+
 function taseerGoBack() {
+  if (state.screen === "garage") {
+    state.screen = "prices";
+    render();
+    return true;
+  }
   if (state.step === 0) return false;
   if (state.step === 1) {
     if (state.carStage === "year") state.carStage = "model";
@@ -882,6 +1169,21 @@ function taseerGoBack() {
 }
 
 function render() {
+  paintAd();
+  if (state.screen === "garage") {
+    steps.hidden = true;
+    renderGarage();
+    if (booted) {
+      const heading = panel.querySelector("h1");
+      if (heading) {
+        heading.tabIndex = -1;
+        heading.focus({ preventScroll: true });
+      }
+    }
+    booted = true;
+    return;
+  }
+  steps.hidden = false;
   renderSteps();
   [renderCity, renderCar, renderProblem, renderResult][state.step]();
   persist();
@@ -905,6 +1207,10 @@ document.addEventListener("click", (event) => {
 });
 
 window.taseerGoBack = taseerGoBack;
+document.querySelector("#my-car").addEventListener("click", () => {
+  state.screen = "garage";
+  render();
+});
 restore();
 renderSources();
 render();
