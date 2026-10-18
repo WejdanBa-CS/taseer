@@ -131,18 +131,21 @@ function renderCity() {
     "كل مناطق المملكة. سعر القطعة الأصلية عند الوكيل موحّد، والمدينة تبقى مع الطلب لأن أجرة الورشة غير داخلة في السعر.";
   const input = document.createElement("input");
   input.className = "search";
-  input.placeholder = "ابحثي عن المدينة";
+  input.placeholder = "ابحث عن المدينة";
   input.setAttribute("aria-label", "البحث عن المدينة");
   const host = document.createElement("div");
   const draw = () => {
     host.replaceChildren();
     const query = norm(input.value);
+    if (!query) return;
     const regions = [...new Set(window.MIZAN_CITIES.map((city) => city.region))];
+    let count = 0;
     regions.forEach((region) => {
       const cities = window.MIZAN_CITIES.filter(
-        (city) => city.region === region && (!query || norm(city.name).includes(query) || norm(region).includes(query))
+        (city) => city.region === region && (norm(city.name).includes(query) || norm(region).includes(query))
       );
       if (!cities.length) return;
+      count += cities.length;
       const group = document.createElement("div");
       group.className = "group";
       const title = document.createElement("h2");
@@ -162,10 +165,16 @@ function renderCity() {
       group.append(title, choices);
       host.append(group);
     });
+    if (!count) {
+      const empty = document.createElement("p");
+      empty.className = "note";
+      empty.textContent = "ما لقينا مدينة بهذا الاسم.";
+      host.append(empty);
+    }
   };
   input.addEventListener("input", draw);
   panel.append(lead, input, host);
-  draw();
+  input.focus();
 }
 
 function renderCar() {
@@ -210,7 +219,7 @@ function renderCar() {
     );
     const input = document.createElement("input");
     input.className = "search";
-    input.placeholder = "ابحثي عن الموديل";
+    input.placeholder = "ابحث عن الموديل";
     input.setAttribute("aria-label", "البحث عن الموديل");
     const choices = document.createElement("div");
     choices.className = "choices";
@@ -289,15 +298,15 @@ function renderProblem() {
 
 function verdict(quote, low, high) {
   if (quote < low * 0.7) {
-    return ["ok", "أقل بكثير من سعر القطعة الأصلية. غالباً قطعة تجارية، واسألي عن الضمان."];
+    return ["ok", "أقل بكثير من سعر القطعة الأصلية. غالباً قطعة تجارية، واسأل عن الضمان."];
   }
   if (quote <= high) {
     return ["ok", "قريب من سعر القطعة الأصلية عند الوكيل. هذا قبل أجرة التركيب."];
   }
   if (quote <= high * 1.5) {
-    return ["warn", "أعلى من سعر القطعة المنشورة. اطلبي تفصيل القطعة والأجرة كل واحدة بسعرها."];
+    return ["warn", "أعلى من سعر القطعة المنشورة. اطلب تفصيل القطعة والأجرة كل واحدة بسعرها."];
   }
-  return ["bad", "أعلى بكثير من سعر القطعة الأصلية المنشورة. لا توافقين قبل ما تشوفين الفاتورة مفصّلة."];
+  return ["bad", "أعلى بكثير من سعر القطعة الأصلية المنشورة. لا توافق قبل ما تشوف الفاتورة مفصّلة."];
 }
 
 function renderResult() {
@@ -358,7 +367,7 @@ function renderResult() {
   const button = document.createElement("button");
   button.className = "primary";
   button.type = "submit";
-  button.textContent = "قارني";
+  button.textContent = "قارن";
   const verdictBox = document.createElement("p");
   verdictBox.hidden = true;
   quoteForm.append(input, button);
@@ -369,7 +378,7 @@ function renderResult() {
     if (!Number.isFinite(quote) || quote <= 0) {
       verdictBox.hidden = false;
       verdictBox.className = "verdict warn";
-      verdictBox.textContent = "اكتبي السعر رقماً.";
+      verdictBox.textContent = "اكتب السعر رقماً.";
       return;
     }
     const [tone, text] = verdict(quote, low, high);
