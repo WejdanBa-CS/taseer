@@ -1,4 +1,4 @@
-const data = window.MIZAN_PARTS;
+const data = window.TASEER_PARTS;
 const state = {
   step: 0,
   carStage: "brand",
@@ -11,8 +11,10 @@ const state = {
 };
 
 const STEP_LABELS = ["المدينة", "السيارة", "المشكلة", "السعر"];
+const STORAGE_KEY = "taseer-flow";
 const panel = document.querySelector("#panel");
 const steps = document.querySelector("#steps");
+let booted = false;
 
 function money(value) {
   const digits = Number.isInteger(value) ? 0 : 2;
@@ -22,13 +24,31 @@ function money(value) {
   }).format(value);
 }
 
+function amountNode(low, high) {
+  const node = document.createElement("bdi");
+  node.dir = "ltr";
+  node.textContent = low === high ? money(low) : `${money(low)} – ${money(high)}`;
+  return node;
+}
+
 function norm(value) {
   return String(value || "")
+    .replace(/[\u064B-\u0652\u0670\u0640]/g, "")
     .replace(/[أإآ]/g, "ا")
     .replace(/ة/g, "ه")
     .replace(/ى/g, "ي")
     .replace(/\s+/g, "")
     .toLowerCase();
+}
+
+function parseQuote(raw) {
+  const mapped = String(raw || "")
+    .replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit)))
+    .replace(/[٬،,\s]/g, "")
+    .replace("٫", ".")
+    .trim();
+  if (!mapped) return NaN;
+  return Number(mapped);
 }
 
 function brandName(id) {
@@ -80,46 +100,190 @@ function partsForSelection() {
   return data.parts.filter((part) => ids.has(part.id));
 }
 
+function currentModel() {
+  return modelsForBrand(state.brand).find((item) => item.id === state.model);
+}
+
+function groupedLines(lines) {
+  const groups = new Map();
+  lines.forEach((line) => {
+    const label = lineLabel(line);
+    if (!groups.has(label)) groups.set(label, []);
+    groups.get(label).push(line.price);
+  });
+  return [...groups.entries()]
+    .map(([label, prices]) => {
+      const sorted = prices.slice().sort((a, b) => a - b);
+      return { label, low: sorted[0], high: sorted[sorted.length - 1] };
+    })
+    .sort((a, b) => {
+      const rank = (label) => (label.includes("السائق") ? 0 : label.includes("الراكب") ? 1 : 2);
+      return rank(a.label) - rank(b.label) || a.label.localeCompare(b.label, "ar");
+    });
+}
+
+function persist() {
+  try {
+    sessionStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        step: state.step,
+        carStage: state.carStage,
+        city: state.city ? { region: state.city.region, name: state.city.name } : null,
+        brand: state.brand,
+        model: state.model,
+        yearLabel: state.yearLabel,
+        part: state.part,
+        quote: state.quote,
+      })
+    );
+  } catch (error) {
+    /* الجلسة قد تكون مغلقة في بعض أوضاع الخصوصية */
+  }
+}
+
+function restore() {
+  try {
+    const raw = sessionStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const saved = JSON.parse(raw);
+    if (saved.city) {
+      state.city =
+        window.TASEER_CITIES.find(
+          (city) => city.name === saved.city.name && city.region === saved.city.region
+        ) || null;
+    }
+    state.brand = saved.brand || null;
+    state.model = saved.model || null;
+    state.yearLabel = saved.yearLabel || null;
+    state.part = saved.part || null;
+    state.quote = typeof saved.quote === "string" ? saved.quote : "";
+    state.carStage = saved.carStage || "brand";
+    state.step = Number.isInteger(saved.step) ? saved.step : 0;
+    if (!state.city) state.step = 0;
+    else if (!state.brand) {
+      state.step = Math.min(state.step, 1);
+      state.carStage = "brand";
+    } else if (state.step >= 2 && (!state.model || !state.yearLabel)) {
+      state.step = 1;
+      state.carStage = state.model ? "year" : "model";
+    } else if (state.step >= 3 && !state.part) {
+      state.step = 2;
+    }
+    if (state.step < 0 || state.step > 3) state.step = 0;
+  } catch (error) {
+    /* ابدأ من المدينة إذا كانت الجلسة تالفة */
+  }
+}
+
 function renderSteps() {
-  steps.innerHTML = STEP_LABELS.map(
-    (label, index) => `<li class="${index === state.step ? "on" : ""}">${index + 1}. ${label}</li>`
-  ).join("");
+  steps.replaceChildren();
+  STEP_LABELS.forEach((label, index) => {
+    const item = document.createElement("li");
+    if (index === state.step) {
+      item.className = "on";
+      item.setAttribute("aria-current", "step");
+    } else if (index < state.step) {
+      item.className = "done";
+    }
+    const number = document.createElement("span");
+    number.className = "n";
+    number.textContent = String(index + 1);
+    const name = document.createElement("span");
+    name.textContent = label;
+    item.append(number, name);
+    steps.append(item);
+  });
 }
 
 function renderSources() {
   const list = document.querySelector("#source-list");
-  list.innerHTML = Object.values(window.MIZAN_SOURCES)
-    .map(
-      (source) =>
-        `<li><a href="${source.url}" target="_blank" rel="noreferrer">${source.name}</a>. ${source.note}</li>`
-    )
-    .join("");
+  list.replaceChildren();
+  Object.values(window.TASEER_SOURCES).forEach((source) => {
+    const item = document.createElement("li");
+    const link = document.createElement("a");
+    link.href = source.url;
+    link.target = "_blank";
+    link.rel = "noreferrer";
+    link.textContent = source.name;
+    item.append(link, document.createTextNode(`. ${source.note}`));
+    list.append(item);
+  });
 }
 
 function choice(label, detail, onPick) {
   const button = document.createElement("button");
   button.type = "button";
   button.className = "choice";
-  button.innerHTML = detail ? `${label}<small>${detail}</small>` : label;
+  const labelNode = document.createElement("span");
+  if (/[0-9A-Za-z]/.test(label) && !/[ء-ي]/.test(label)) labelNode.dir = "ltr";
+  labelNode.textContent = label;
+  button.append(labelNode);
+  if (detail) {
+    const small = document.createElement("small");
+    small.textContent = detail;
+    button.append(small);
+  }
   button.addEventListener("click", onPick);
   return button;
 }
 
-function backBar(title, onBack) {
+function backBar(title) {
   const bar = document.createElement("div");
   bar.className = "bar";
   const heading = document.createElement("h1");
   heading.textContent = title;
   bar.append(heading);
-  if (onBack) {
+  if (state.step > 0) {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "linkish";
     button.textContent = "رجوع";
-    button.addEventListener("click", onBack);
+    button.addEventListener("click", () => window.taseerGoBack());
     bar.append(button);
   }
   return bar;
+}
+
+function emptyNote(text) {
+  const note = document.createElement("p");
+  note.className = "empty";
+  note.setAttribute("role", "status");
+  note.textContent = text;
+  return note;
+}
+
+function selectBrand(id) {
+  if (state.brand !== id) {
+    state.brand = id;
+    state.model = null;
+    state.yearLabel = null;
+    state.part = null;
+    state.quote = "";
+  }
+  state.carStage = "model";
+  render();
+}
+
+function selectModel(id) {
+  if (state.model !== id) {
+    state.model = id;
+    state.yearLabel = null;
+    state.part = null;
+    state.quote = "";
+  }
+  state.carStage = "year";
+  render();
+}
+
+function selectYear(year) {
+  if (state.yearLabel !== year) {
+    state.yearLabel = year;
+    state.part = null;
+    state.quote = "";
+  }
+  state.step = 2;
+  render();
 }
 
 function renderCity() {
@@ -128,21 +292,27 @@ function renderCity() {
   const lead = document.createElement("p");
   lead.className = "lead";
   lead.textContent =
-    "كل مناطق المملكة. سعر القطعة الأصلية عند الوكيل موحّد، والمدينة تبقى مع الطلب لأن أجرة الورشة غير داخلة في السعر.";
+    "السعر الأصلي موحّد في المملكة. المدينة تبقى مع الطلب لأن أجرة الورشة غير داخلة.";
   const input = document.createElement("input");
   input.className = "search";
-  input.placeholder = "ابحثي عن المدينة";
+  input.type = "search";
+  input.placeholder = "ابحث عن المدينة";
   input.setAttribute("aria-label", "البحث عن المدينة");
+  input.autocomplete = "off";
   const host = document.createElement("div");
   const draw = () => {
     host.replaceChildren();
     const query = norm(input.value);
-    const regions = [...new Set(window.MIZAN_CITIES.map((city) => city.region))];
+    const regions = [...new Set(window.TASEER_CITIES.map((city) => city.region))];
+    let shown = 0;
     regions.forEach((region) => {
-      const cities = window.MIZAN_CITIES.filter(
-        (city) => city.region === region && (!query || norm(city.name).includes(query) || norm(region).includes(query))
+      const cities = window.TASEER_CITIES.filter(
+        (city) =>
+          city.region === region &&
+          (!query || norm(city.name).includes(query) || norm(region).includes(query))
       );
       if (!cities.length) return;
+      shown += cities.length;
       const group = document.createElement("div");
       group.className = "group";
       const title = document.createElement("h2");
@@ -162,6 +332,9 @@ function renderCity() {
       group.append(title, choices);
       host.append(group);
     });
+    if (!shown) {
+      host.append(emptyNote("ما لقينا هذه المدينة. اختار مدينة أخرى في المنطقة إذا مدينتك مو بالقائمة."));
+    }
   };
   input.addEventListener("input", draw);
   panel.append(lead, input, host);
@@ -171,65 +344,47 @@ function renderCity() {
 function renderCar() {
   panel.replaceChildren();
   if (state.carStage === "brand") {
-    panel.append(
-      backBar("وش الوكالة؟", () => {
-        state.step = 0;
-        render();
-      })
-    );
-    const lead = document.createElement("p");
-    lead.className = "lead";
-    lead.textContent = "القائمة الحالية من جدولي كيا وفيكتوري المنشورين. تويوتا أسعارها في متجر الوكيل وما دخلت الجدول.";
+    panel.append(backBar("وش الوكالة؟"));
     const choices = document.createElement("div");
     choices.className = "choices";
     data.brands.forEach((brand) => {
-      choices.append(
-        choice(brand.name, "أسعار قطع منشورة", () => {
-          state.brand = brand.id;
-          state.model = null;
-          state.yearLabel = null;
-          state.part = null;
-          state.carStage = "model";
-          render();
-        })
-      );
+      choices.append(choice(brand.name, "أسعار قطع منشورة", () => selectBrand(brand.id)));
     });
     const toyota = document.createElement("p");
     toyota.className = "note";
-    toyota.innerHTML = `تويوتا: <a href="${window.MIZAN_SOURCES.toyota.url}" target="_blank" rel="noreferrer">متجر القطع</a>.`;
-    panel.append(lead, choices, toyota);
+    const link = document.createElement("a");
+    link.href = window.TASEER_SOURCES.toyota.url;
+    link.target = "_blank";
+    link.rel = "noreferrer";
+    link.textContent = "متجر الوكيل";
+    toyota.append(document.createTextNode("تويوتا أسعارها في "), link, document.createTextNode(" وما دخلت الجدول."));
+    panel.append(choices, toyota);
     return;
   }
 
   if (state.carStage === "model") {
-    panel.append(
-      backBar(`نوع سيارة ${brandName(state.brand)}`, () => {
-        state.carStage = "brand";
-        render();
-      })
-    );
+    panel.append(backBar(`نوع سيارة ${brandName(state.brand)}`));
     const input = document.createElement("input");
     input.className = "search";
-    input.placeholder = "ابحثي عن الموديل";
+    input.type = "search";
+    input.placeholder = "ابحث عن الموديل";
     input.setAttribute("aria-label", "البحث عن الموديل");
+    input.autocomplete = "off";
     const choices = document.createElement("div");
     choices.className = "choices";
     const draw = () => {
       choices.replaceChildren();
       const query = norm(input.value);
-      modelsForBrand(state.brand)
-        .filter((model) => !query || norm(model.name).includes(query) || norm(model.id).includes(query))
-        .forEach((model) => {
-          choices.append(
-            choice(model.name, "", () => {
-              state.model = model.id;
-              state.yearLabel = null;
-              state.part = null;
-              state.carStage = "year";
-              render();
-            })
-          );
-        });
+      const models = modelsForBrand(state.brand).filter(
+        (model) => !query || norm(model.name).includes(query) || norm(model.id).includes(query)
+      );
+      if (!models.length) {
+        choices.append(emptyNote("ما لقينا هذا الموديل في القوائم المنشورة"));
+        return;
+      }
+      models.forEach((model) => {
+        choices.append(choice(model.name, "", () => selectModel(model.id)));
+      });
     };
     input.addEventListener("input", draw);
     panel.append(input, choices);
@@ -237,44 +392,31 @@ function renderCar() {
     return;
   }
 
-  const model = modelsForBrand(state.brand).find((item) => item.id === state.model);
-  panel.append(
-    backBar(`سنة ${model.name}`, () => {
-      state.carStage = "model";
-      render();
-    })
-  );
+  const model = currentModel();
+  panel.append(backBar(`سنة ${model.name}`));
   const choices = document.createElement("div");
   choices.className = "choices";
   yearsForModel().forEach((year) => {
-    choices.append(
-      choice(year, "", () => {
-        state.yearLabel = year;
-        state.part = null;
-        state.step = 2;
-        render();
-      })
-    );
+    choices.append(choice(year, "", () => selectYear(year)));
   });
   panel.append(choices);
 }
 
 function renderProblem() {
   panel.replaceChildren();
-  const model = modelsForBrand(state.brand).find((item) => item.id === state.model);
-  panel.append(
-    backBar("وش القطعة؟", () => {
-      state.step = 1;
-      state.carStage = "year";
-      render();
-    })
-  );
+  const model = currentModel();
+  panel.append(backBar("وش القطعة؟"));
   const lead = document.createElement("p");
   lead.className = "lead";
   lead.textContent = `${model.name} ${state.yearLabel}. القطع الظاهرة هي اللي لها سعر في قائمة الوكيل.`;
   const choices = document.createElement("div");
   choices.className = "choices";
-  partsForSelection().forEach((part) => {
+  const parts = partsForSelection();
+  if (!parts.length) {
+    panel.append(lead, emptyNote("ما فيه سعر منشور لهالسيارة في القوائم الحالية."));
+    return;
+  }
+  parts.forEach((part) => {
     choices.append(
       choice(part.name, "", () => {
         state.part = part.id;
@@ -289,71 +431,85 @@ function renderProblem() {
 
 function verdict(quote, low, high) {
   if (quote < low * 0.7) {
-    return ["ok", "أقل بكثير من سعر القطعة الأصلية. غالباً قطعة تجارية، واسألي عن الضمان."];
+    return ["ok", "غالباً قطعة تجارية، واسأل عن الضمان."];
   }
   if (quote <= high) {
-    return ["ok", "قريب من سعر القطعة الأصلية عند الوكيل. هذا قبل أجرة التركيب."];
+    return ["ok", "قريب من سعر القطعة الأصلية. هذا قبل الأجرة."];
   }
   if (quote <= high * 1.5) {
-    return ["warn", "أعلى من سعر القطعة المنشورة. اطلبي تفصيل القطعة والأجرة كل واحدة بسعرها."];
+    return ["warn", "أعلى من السعر المنشور. اطلب تفصيل القطعة والأجرة كل واحدة بسعرها."];
   }
-  return ["bad", "أعلى بكثير من سعر القطعة الأصلية المنشورة. لا توافقين قبل ما تشوفين الفاتورة مفصّلة."];
+  return ["bad", "أعلى بكثير. لا توافق قبل ما تشوف الفاتورة مفصّلة."];
 }
 
 function renderResult() {
   panel.replaceChildren();
-  const model = modelsForBrand(state.brand).find((item) => item.id === state.model);
+  const model = currentModel();
   const lines = selectedRows()
     .filter((row) => row.part === state.part)
     .sort((a, b) => a.price - b.price);
-  const low = lines[0].price;
-  const high = lines[lines.length - 1].price;
-  const source = window.MIZAN_SOURCES[lines[0].source];
+  if (!lines.length) {
+    panel.append(backBar(partName(state.part)));
+    panel.append(emptyNote("ما فيه سعر منشور لهالقطعة."));
+    return;
+  }
+  const groups = groupedLines(lines);
+  const low = Math.min(...groups.map((group) => group.low));
+  const high = Math.max(...groups.map((group) => group.high));
+  const source = window.TASEER_SOURCES[lines[0].source];
 
-  panel.append(
-    backBar(partName(state.part), () => {
-      state.step = 2;
-      render();
-    })
-  );
+  panel.append(backBar(partName(state.part)));
+
   const context = document.createElement("p");
   context.className = "lead";
   context.textContent = `${state.city.name} · ${brandName(state.brand)} ${model.name} ${state.yearLabel}`;
 
   const price = document.createElement("p");
   price.className = "price";
-  price.innerHTML =
-    low === high
-      ? `${money(low)} <span>ريال</span>`
-      : `${money(low)} – ${money(high)} <span>ريال</span>`;
+  price.append(amountNode(low, high), document.createTextNode(" "));
+  const unit = document.createElement("span");
+  unit.textContent = "ريال";
+  price.append(unit);
 
   const list = document.createElement("div");
   list.className = "lines";
-  lines.forEach((line) => {
+  groups.forEach((group) => {
     const row = document.createElement("div");
     row.className = "line";
-    row.innerHTML = `<span>${lineLabel(line)}</span><strong>${money(line.price)} ريال</strong>`;
+    const name = document.createElement("span");
+    name.textContent = group.label;
+    const value = document.createElement("strong");
+    value.append(amountNode(group.low, group.high), document.createTextNode(" ريال"));
+    row.append(name, value);
     list.append(row);
   });
 
   const note = document.createElement("p");
   note.className = "note";
-  note.textContent = `${source.note} الأجرة غير مشمولة، والسعر نفسه في كل مدن المملكة.`;
+  note.textContent =
+    "هذا سعر القطعة الأصلية عند الوكيل، مو سعر الورشة كاملاً. الأجرة غير مشمولة، والسعر نفسه في كل المدن.";
 
   const sourceLine = document.createElement("p");
   sourceLine.className = "note";
-  sourceLine.innerHTML = `المصدر: <a href="${source.url}" target="_blank" rel="noreferrer">${source.name}</a>`;
+  const sourceLink = document.createElement("a");
+  sourceLink.href = source.url;
+  sourceLink.target = "_blank";
+  sourceLink.rel = "noreferrer";
+  sourceLink.textContent = source.name;
+  sourceLine.append(document.createTextNode("المصدر: "), sourceLink, document.createTextNode(`. ${source.note}`));
 
   const quoteBox = document.createElement("div");
-  quoteBox.className = "group";
+  quoteBox.className = "compare";
   const quoteTitle = document.createElement("h2");
   quoteTitle.textContent = "كم طلبوا منك على القطعة؟";
   const quoteForm = document.createElement("form");
   quoteForm.className = "quote";
   const input = document.createElement("input");
   input.inputMode = "decimal";
+  input.enterKeyHint = "done";
   input.placeholder = "سعر الورشة بالريال";
   input.setAttribute("aria-label", "سعر الورشة");
+  input.autocomplete = "off";
   input.value = state.quote;
   const button = document.createElement("button");
   button.className = "primary";
@@ -361,31 +517,72 @@ function renderResult() {
   button.textContent = "قارني";
   const verdictBox = document.createElement("p");
   verdictBox.hidden = true;
-  quoteForm.append(input, button);
-  quoteForm.addEventListener("submit", (event) => {
-    event.preventDefault();
-    const quote = Number(String(input.value).replace(/,/g, ""));
+  const paintVerdict = () => {
+    const quote = parseQuote(input.value);
     state.quote = input.value;
+    persist();
     if (!Number.isFinite(quote) || quote <= 0) {
       verdictBox.hidden = false;
       verdictBox.className = "verdict warn";
-      verdictBox.textContent = "اكتبي السعر رقماً.";
+      verdictBox.textContent = "اكتب السعر رقماً.";
       return;
     }
     const [tone, text] = verdict(quote, low, high);
     verdictBox.hidden = false;
     verdictBox.className = `verdict ${tone}`;
     verdictBox.textContent = text;
+  };
+  quoteForm.append(input, button);
+  quoteForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    paintVerdict();
   });
   quoteBox.append(quoteTitle, quoteForm, verdictBox);
+  if (state.quote) paintVerdict();
 
   panel.append(context, price, list, note, sourceLine, quoteBox);
+}
+
+function taseerGoBack() {
+  if (state.step === 0) return false;
+  if (state.step === 1) {
+    if (state.carStage === "year") state.carStage = "model";
+    else if (state.carStage === "model") state.carStage = "brand";
+    else state.step = 0;
+  } else if (state.step === 2) {
+    state.step = 1;
+    state.carStage = "year";
+  } else {
+    state.step = 2;
+  }
+  render();
+  return true;
 }
 
 function render() {
   renderSteps();
   [renderCity, renderCar, renderProblem, renderResult][state.step]();
+  persist();
+  if (booted) {
+    const heading = panel.querySelector("h1");
+    if (heading) {
+      heading.tabIndex = -1;
+      heading.focus({ preventScroll: true });
+    }
+  }
+  booted = true;
 }
 
+document.addEventListener("click", (event) => {
+  const link = event.target.closest("a[href]");
+  const bridge = window.TaseerAndroid;
+  if (!link || !bridge || typeof bridge.open !== "function") return;
+  if (!/^https?:/i.test(link.href)) return;
+  event.preventDefault();
+  bridge.open(link.href);
+});
+
+window.taseerGoBack = taseerGoBack;
+restore();
 renderSources();
 render();

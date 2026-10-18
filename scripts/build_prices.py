@@ -178,7 +178,7 @@ def main():
     }
     target = ROOT / "js" / "parts.js"
     target.write_text(
-        "window.MIZAN_PARTS = " + json.dumps(payload, ensure_ascii=False) + ";\n",
+        "window.TASEER_PARTS = " + json.dumps(payload, ensure_ascii=False) + ";\n",
         encoding="utf-8",
     )
     print(f"wrote {len(rows)} rows to {target}")
