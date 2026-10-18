@@ -323,13 +323,14 @@ function renderCity() {
   const draw = () => {
     host.replaceChildren();
     const query = norm(input.value);
+    if (!query) return;
     const regions = [...new Set(window.TASEER_CITIES.map((city) => city.region))];
     let shown = 0;
     regions.forEach((region) => {
       const cities = window.TASEER_CITIES.filter(
         (city) =>
           city.region === region &&
-          (!query || norm(city.name).includes(query) || norm(region).includes(query))
+          (norm(city.name).includes(query) || norm(region).includes(query))
       );
       if (!cities.length) return;
       shown += cities.length;
@@ -353,12 +354,12 @@ function renderCity() {
       host.append(group);
     });
     if (!shown) {
-      host.append(emptyNote("ما لقينا هذه المدينة. اختار مدينة أخرى في المنطقة إذا مدينتك مو بالقائمة."));
+      host.append(emptyNote("ما لقينا مدينة بهذا الاسم."));
     }
   };
   input.addEventListener("input", draw);
   panel.append(lead, input, host);
-  draw();
+  input.focus();
 }
 
 function budgetAmount() {
@@ -1188,7 +1189,7 @@ function renderResult() {
   const button = document.createElement("button");
   button.className = "primary";
   button.type = "submit";
-  button.textContent = "قارني";
+  button.textContent = "قارن";
   const resultHost = document.createElement("div");
   let crowdTicket = 0;
   let latestAdviceInput = null;
