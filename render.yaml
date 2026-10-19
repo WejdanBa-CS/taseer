@@ -1,6 +1,6 @@
-# Blueprint: خادم تقارير تسعير (crowd API) على Render مع HTTPS.
-# ملاحظة: خطة free تعيد تشغيل الخدمة بعد الخمول وتفقد SQLite المحلي.
-# للبيانات الدائمة لاحقاً: ارفعي الخطة وأضيفي disk على /var/data.
+# Blueprint اختياري: خادم Python احتياطي على Render.
+# الإنتاج الافتراضي للتطبيق هو Supabase Edge Functions (Postgres دائم).
+# خطة free تفقد SQLite بعد الخمول — لا تعتمد عليها كمصدر بيانات.
 services:
   - type: web
     name: taseer-crowd

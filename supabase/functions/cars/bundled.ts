@@ -1,18 +1,90 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 export const NEEDED = 3;
+export const RATE_LIMIT = 120;
+export const RATE_LIMIT_WRITE = 40;
+export const RATE_WINDOW_MS = 600_000;
 
 export type Json = Record<string, unknown>;
 
-export function json(status: number, payload: Json): Response {
+const recentHits = new Map<string, number[]>();
+const recentWrites = new Map<string, number[]>();
+
+function corsOrigins(): Set<string> {
+  return new Set(
+    (Deno.env.get("TASEER_CORS_ORIGINS") ?? "")
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean),
+  );
+}
+
+/** قائمة origins أو * عبر TASEER_CORS_ORIGINS؛ فارغ = عكس Origin إن وُجد (للويب مع API عام محدود). */
+export function corsHeaders(req: Request): HeadersInit {
+  const origins = corsOrigins();
+  const requestOrigin = req.headers.get("Origin")?.trim() ?? "";
+  const headers: Record<string, string> = {
+    "access-control-allow-methods": "GET, POST, OPTIONS",
+    "access-control-allow-headers": "authorization, apikey, content-type",
+    vary: "Origin",
+  };
+  if (origins.has("*")) {
+    headers["access-control-allow-origin"] = "*";
+    return headers;
+  }
+  if (origins.size > 0) {
+    if (requestOrigin && origins.has(requestOrigin)) {
+      headers["access-control-allow-origin"] = requestOrigin;
+    }
+    return headers;
+  }
+  if (requestOrigin) {
+    headers["access-control-allow-origin"] = requestOrigin;
+  }
+  return headers;
+}
+
+export function json(status: number, payload: Json, req?: Request): Response {
   return new Response(JSON.stringify(payload), {
     status,
     headers: {
       "content-type": "application/json; charset=utf-8",
       "cache-control": "no-store",
       "x-content-type-options": "nosniff",
+      ...(req ? corsHeaders(req) : {}),
     },
   });
+}
+
+export function optionsResponse(req: Request): Response {
+  return new Response(null, {
+    status: 204,
+    headers: corsHeaders(req),
+  });
+}
+
+export function clientIp(req: Request): string {
+  const forwarded = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+  if (forwarded) return forwarded.slice(0, 64);
+  const real = req.headers.get("x-real-ip")?.trim();
+  if (real) return real.slice(0, 64);
+  return "unknown";
+}
+
+export function allowRequest(ip: string, write: boolean): boolean {
+  const now = Date.now();
+  const bucket = write ? recentWrites : recentHits;
+  const limit = write ? RATE_LIMIT_WRITE : RATE_LIMIT;
+  const hits = (bucket.get(ip) ?? []).filter((stamp) =>
+    now - stamp < RATE_WINDOW_MS
+  );
+  if (hits.length >= limit) {
+    bucket.set(ip, hits);
+    return false;
+  }
+  hits.push(now);
+  bucket.set(ip, hits);
+  return true;
 }
 
 export function admin() {
@@ -115,7 +187,6 @@ export async function listCarNotes(brand: string, device: string | null) {
   }));
 }
 
-
 const CAR_BRANDS = new Set(["kia", "victory"]);
 
 function parseComment(value: unknown): string | null {
@@ -126,29 +197,30 @@ function parseComment(value: unknown): string | null {
 
 Deno.serve(async (req) => {
   try {
-    if (req.method === "OPTIONS") {
-      return new Response(null, { status: 204 });
-    }
+    if (req.method === "OPTIONS") return optionsResponse(req);
+    const ip = clientIp(req);
     if (req.method === "GET") {
+      if (!allowRequest(ip, false)) return json(429, { ok: false }, req);
       const url = new URL(req.url);
       const brand = cleanToken(url.searchParams.get("brand"), validKey, 40);
-      if (!brand || !CAR_BRANDS.has(brand)) return json(400, { ok: false });
+      if (!brand || !CAR_BRANDS.has(brand)) return json(400, { ok: false }, req);
       let device = cleanToken(url.searchParams.get("device"), validDevice, 64);
       if (!device) device = null;
       const notes = await listCarNotes(brand, device);
-      return json(200, { ok: true, brand, notes });
+      return json(200, { ok: true, brand, notes }, req);
     }
-    if (req.method !== "POST") return json(405, { ok: false });
+    if (req.method !== "POST") return json(405, { ok: false }, req);
+    if (!allowRequest(ip, true)) return json(429, { ok: false }, req);
     const payload = await req.json() as Record<string, unknown>;
     const device = cleanToken(payload.device, validDevice, 64);
     const brand = cleanToken(payload.brand, validKey, 40);
     const model = cleanToken(payload.model, validModel, 40);
     const city = cleanToken(payload.city, validCity, 40);
     if (!device || !brand || !CAR_BRANDS.has(brand) || !model || !city) {
-      return json(400, { ok: false });
+      return json(400, { ok: false }, req);
     }
     const includes = payload.includesFuel;
-    if (typeof includes !== "boolean") return json(400, { ok: false });
+    if (typeof includes !== "boolean") return json(400, { ok: false }, req);
     let storedPrice: number | null = null;
     let message = "";
     if ("price" in payload && payload.price != null && payload.price !== "") {
@@ -186,9 +258,9 @@ Deno.serve(async (req) => {
       accepted: !message,
       message,
       notes,
-    });
+    }, req);
   } catch (error) {
     console.error(error);
-    return json(400, { ok: false });
+    return json(400, { ok: false }, req);
   }
 });

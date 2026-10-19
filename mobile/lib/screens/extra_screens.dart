@@ -361,6 +361,12 @@ class _GarageScreenState extends State<GarageScreen> {
               onPressed: () => state.buy('advice_month'),
               child: const Text('اشترك بـ 29 ريال'),
             ),
+            TextButton(
+              onPressed: state.restorePurchases,
+              child: const Text('استعادة المشتريات'),
+            ),
+            if (state.payError.isNotEmpty)
+              SoftNote(state.payError, color: TaseerColors.warn),
             if (state.garage.car != null)
               SoftNote(
                 'بياناتك محفوظة: ${state.garage.car!.modelName} ${state.garage.car!.yearLabel}. الاشتراك يفتحها من جديد.',

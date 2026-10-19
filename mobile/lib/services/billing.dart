@@ -54,6 +54,35 @@ class BillingService {
     await _sub?.cancel();
   }
 
+  Future<void> restorePurchases() async {
+    final iap = _iap;
+    if (iap == null) {
+      onEvent?.call(
+        const PurchaseEvent(
+          ok: false,
+          productId: '',
+          token: '',
+          kind: 'restore',
+          message: 'استعادة المشتريات متاحة من تطبيق الجوال فقط.',
+        ),
+      );
+      return;
+    }
+    try {
+      await iap.restorePurchases();
+    } catch (_) {
+      onEvent?.call(
+        const PurchaseEvent(
+          ok: false,
+          productId: '',
+          token: '',
+          kind: 'restore',
+          message: 'ما قدرنا نسترجع المشتريات الآن.',
+        ),
+      );
+    }
+  }
+
   Future<void> purchase(String productId) async {
     if (!productIds.contains(productId)) {
       onEvent?.call(

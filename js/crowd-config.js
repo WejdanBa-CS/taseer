@@ -1,3 +1,5 @@
-/* ضع رابط خادم التقارير قبل بناء أندرويد، مثل https://example.com بدون /api/crowd.
-   اتركه فارغاً عند فتح الصفحة من نفس الخادم. */
-window.TASEER_CROWD_ENDPOINT = "";
+/* الإنتاج: دوال Supabase. محلياً مع Python اترك المسار فارغاً أو ضع http://127.0.0.1:8771 */
+window.TASEER_CROWD_ENDPOINT =
+  "https://vwfpudqrvjjedxtpxcps.supabase.co/functions/v1";
+window.TASEER_SUPABASE_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3ZnB1ZHFydmpqZWR4dHB4Y3BzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzNTg2MzEsImV4cCI6MjEwNzkzNDYzMX0.JwwuvRGRE4qkvuaOOomWGzXAIxXPVNcuDGEM4Iqmtfs";

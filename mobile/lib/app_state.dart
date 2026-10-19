@@ -315,6 +315,12 @@ class AppState extends ChangeNotifier {
     await billing.purchase(productId);
   }
 
+  Future<void> restorePurchases() async {
+    payError = '';
+    notifyListeners();
+    await billing.restorePurchases();
+  }
+
   Future<void> saveGarage(GarageData data) async {
     garage = data;
     await GarageStore.write(data);

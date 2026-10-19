@@ -1,14 +1,17 @@
 import {
+  admin,
+  allowRequest,
   cleanToken,
+  clientIp,
   crowdSummary,
   json,
   number,
+  optionsResponse,
   validCity,
   validDevice,
   validKey,
   validYear,
-  admin,
-} from "./_shared/crowd.ts";
+} from "../_shared/crowd.ts";
 
 function fields(source: Record<string, unknown>, quoteRequired: boolean) {
   const brand = cleanToken(source.brand, validKey, 40);
@@ -29,27 +32,31 @@ function fields(source: Record<string, unknown>, quoteRequired: boolean) {
 
 Deno.serve(async (req) => {
   try {
-    if (req.method === "OPTIONS") {
-      return new Response(null, { status: 204 });
-    }
+    if (req.method === "OPTIONS") return optionsResponse(req);
+    const ip = clientIp(req);
     if (req.method === "GET") {
+      if (!allowRequest(ip, false)) return json(429, { ok: false }, req);
       const url = new URL(req.url);
       const q = Object.fromEntries(url.searchParams.entries());
       const f = fields(q, false);
       return json(
         200,
         await crowdSummary(f.brand, f.model, f.yearLabel, f.part, f.city),
+        req,
       );
     }
-    if (req.method !== "POST") return json(405, { ok: false });
+    if (req.method !== "POST") return json(405, { ok: false }, req);
+    if (!allowRequest(ip, true)) return json(429, { ok: false }, req);
     const payload = await req.json();
-    if (!payload || typeof payload !== "object") return json(400, { ok: false });
+    if (!payload || typeof payload !== "object") {
+      return json(400, { ok: false }, req);
+    }
     const device = cleanToken(
       (payload as Record<string, unknown>).device,
       validDevice,
       64,
     );
-    if (!device) return json(400, { ok: false });
+    if (!device) return json(400, { ok: false }, req);
     const f = fields(payload as Record<string, unknown>, true);
     const accepted = f.quote != null;
     if (accepted) {
@@ -73,9 +80,9 @@ Deno.serve(async (req) => {
       f.part,
       f.city,
     );
-    return json(200, { ...result, accepted });
+    return json(200, { ...result, accepted }, req);
   } catch (error) {
     console.error(error);
-    return json(400, { ok: false });
+    return json(400, { ok: false }, req);
   }
 });
