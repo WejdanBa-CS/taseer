@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../app_state.dart';
 import '../data/catalog.dart';
+import '../data/models.dart';
 import '../services/auth_store.dart';
 import '../services/garage_store.dart';
 import '../theme.dart';
@@ -34,7 +35,7 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
     await widget.state.refreshSession();
-    widget.state.goFlow();
+    widget.state.completeLogin();
   }
 
   @override
@@ -62,11 +63,17 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           if (session != null) ...[
             SoftNote('${session.name} · ${session.phone}'),
+            TextButton(
+              onPressed: widget.state.restorePurchases,
+              child: const Text('استعادة المشتريات'),
+            ),
+            if (widget.state.payError.isNotEmpty)
+              SoftNote(widget.state.payError, color: TaseerColors.warn),
             OutlinedButton(
               onPressed: () async {
                 await AuthStore.logout();
                 await widget.state.refreshSession();
-                widget.state.goFlow();
+                widget.state.goBack();
               },
               child: const Text('تسجيل الخروج'),
             ),
@@ -104,6 +111,9 @@ class _CostsScreenState extends State<CostsScreen> {
   late final TextEditingController liters;
   late final TextEditingController insurance;
   String fuelGrade = '91';
+  String? pickBrand;
+  String? pickModel;
+  String? pickYear;
 
   static const upkeepMonths = {
     'oil-filter': 6,
@@ -116,11 +126,42 @@ class _CostsScreenState extends State<CostsScreen> {
   @override
   void initState() {
     super.initState();
-    final g = widget.state.garage;
+    final state = widget.state;
+    state.applyGarageCar();
+    final g = state.garage;
     carPrice = TextEditingController(text: g.carPrice > 0 ? '${g.carPrice}' : '');
     liters = TextEditingController(text: g.litersPerMonth > 0 ? '${g.litersPerMonth}' : '');
     insurance = TextEditingController(text: g.insuranceSar > 0 ? '${g.insuranceSar}' : '');
     fuelGrade = g.fuelGrade;
+    pickBrand = state.brand ?? g.car?.brand;
+    pickModel = state.model ?? g.car?.model;
+    pickYear = state.yearLabel ?? g.car?.yearLabel;
+  }
+
+  Future<void> _pickBrand(String? id) async {
+    setState(() {
+      pickBrand = id;
+      pickModel = null;
+      pickYear = null;
+    });
+  }
+
+  Future<void> _pickModel(String? id) async {
+    setState(() {
+      pickModel = id;
+      pickYear = null;
+    });
+  }
+
+  Future<void> _pickYear(String? label) async {
+    if (label == null || pickBrand == null || pickModel == null) return;
+    setState(() => pickYear = label);
+    await widget.state.setCostCar(
+      brandId: pickBrand!,
+      modelId: pickModel!,
+      year: label,
+    );
+    setState(() {});
   }
 
   @override
@@ -155,20 +196,18 @@ class _CostsScreenState extends State<CostsScreen> {
     final carMonth = price > 0 ? (price / 60 * 100).round() / 100 : 0.0;
     final insuranceMonth = (cover / 12 * 100).round() / 100;
 
+    final costBrand = pickBrand ?? widget.state.brand;
+    final costModel = pickModel ?? widget.state.model;
+    final costYear = pickYear ?? widget.state.yearLabel;
     double upkeep = 0;
     double partsOnce = 0;
-    final hasCar = widget.state.brand != null &&
-        widget.state.model != null &&
-        widget.state.yearLabel != null;
+    final hasCar =
+        costBrand != null && costModel != null && costYear != null;
     if (hasCar) {
-      final selected = Catalog.instance.partsFor(
-        widget.state.brand!,
-        widget.state.model!,
-        widget.state.yearLabel!,
-      );
+      final selected = Catalog.instance.partsFor(costBrand, costModel, costYear);
       for (final part in selected) {
         final prices = Catalog.instance
-            .selectedRows(widget.state.brand!, widget.state.model!, widget.state.yearLabel!)
+            .selectedRows(costBrand, costModel, costYear)
             .where((r) => r.part == part.id)
             .map((r) => r.price)
             .toList()
@@ -183,6 +222,15 @@ class _CostsScreenState extends State<CostsScreen> {
     partsOnce = (partsOnce * 100).round() / 100;
     final total = ((carMonth + fuelMonth + insuranceMonth + upkeep) * 100).round() / 100;
     final aramco = Catalog.instance.sources['aramco'];
+    final models = costBrand == null
+        ? const <CarModel>[]
+        : Catalog.instance.modelsForBrand(costBrand);
+    final years = costBrand == null || costModel == null
+        ? const <String>[]
+        : Catalog.instance.yearsFor(costBrand, costModel);
+    final carLabel = hasCar
+        ? '${widget.state.modelName() ?? costModel} $costYear'
+        : null;
 
     return ShellCard(
       child: Column(
@@ -197,8 +245,63 @@ class _CostsScreenState extends State<CostsScreen> {
             ],
           ),
           const SectionLead(
-            'تحسب من أرقام معروفة: سعر المعرض اللي تكتبه، لتر البنزين من أرامكو، قطع الغيار المنشورة، وتأمينك. ما فيه قائمة أسعار سيارات جديدة موثوقة نضيفها من عندنا.',
+            'اختر السيارة عشان تدخل صيانة القطع المنشورة، ثم اكتب سعر المعرض والبنزين والتأمين. قائمة التكلفة مجانية؛ سجل التذكير في «سيارتي» يحتاج اشتراك.',
           ),
+          const Text('السيارة', style: TextStyle(fontWeight: FontWeight.w700)),
+          DropdownButtonFormField<String>(
+            key: ValueKey('cost-brand-$pickBrand'),
+            initialValue: pickBrand,
+            decoration: const InputDecoration(hintText: 'الوكالة'),
+            items: Catalog.instance.brands
+                .map(
+                  (b) => DropdownMenuItem(
+                    value: b.id,
+                    child: Text(
+                      '${b.name} · ${Catalog.instance.modelsForBrand(b.id).length} موديل',
+                    ),
+                  ),
+                )
+                .toList(),
+            onChanged: _pickBrand,
+          ),
+          if (pickBrand != null)
+            DropdownButtonFormField<String>(
+              key: ValueKey('cost-model-$pickBrand-$pickModel'),
+              initialValue: pickModel,
+              decoration: const InputDecoration(hintText: 'الموديل'),
+              items: models
+                  .map((m) => DropdownMenuItem(value: m.id, child: Text(m.name)))
+                  .toList(),
+              onChanged: _pickModel,
+            ),
+          if (pickBrand != null && pickModel != null)
+            DropdownButtonFormField<String>(
+              key: ValueKey('cost-year-$pickModel-$pickYear'),
+              initialValue: pickYear,
+              decoration: const InputDecoration(hintText: 'السنة'),
+              items: years
+                  .map((y) => DropdownMenuItem(value: y, child: Text(y)))
+                  .toList(),
+              onChanged: _pickYear,
+            ),
+          SoftNote(
+            hasCar
+                ? 'صيانة القطع محسوبة على: $carLabel'
+                : 'اختار الوكالة والموديل والسنة عشان تطلع صيانة القطع.',
+          ),
+          if (hasCar)
+            TextButton(
+              onPressed: () async {
+                await widget.state.setCostCar(
+                  brandId: costBrand,
+                  modelId: costModel,
+                  year: costYear,
+                );
+                widget.state.goFlowWithCar();
+              },
+              child: const Text('اعرف سعر قطعة لهذه السيارة'),
+            ),
+          const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
@@ -347,15 +450,14 @@ class _GarageScreenState extends State<GarageScreen> {
           ),
           if (!subscribed) ...[
             const SectionLead(
-              'الاشتراك الشهري بـ 29 ريال يشيل الإعلان ويفتح سجل السيارة. سعر القطعة الأصلية يبقى مجاني، والنصيحة الواحدة بـ 9 ريال ما تشيل الإعلان.',
+              'الاشتراك الشهري بـ 29 ريال يفتح سجل السيارة والتذكير والتكاليف. قائمة التكلفة وأسعار الوكيل تبقى مجانية، والنصيحة الواحدة بـ 9 ريال.',
             ),
             ...[
-              'إزالة الإعلان',
-              'حفظ نوع السيارة',
+              'حفظ نوع السيارة في سيارتي',
               'تذكير الصيانة حسب مرور الأشهر',
               'صرف الوقود الشهري',
               'التأمين وموعد تجديده',
-              'حساب تكاليف الشهر',
+              'ملخص تكاليف الشهر',
             ].map((item) => SoftNote('• $item')),
             ElevatedButton(
               onPressed: () => state.buy('advice_month'),
