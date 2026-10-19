@@ -20,6 +20,27 @@ class Api {
     return false;
   }
 
+  /// مسار دوال Supabase (`/functions/v1`) مقابل خادم Python (`/api/...`).
+  static bool _usesFunctionsV1(String root) => root.contains('/functions/v1');
+
+  static String _crowdUrl(String root) =>
+      _usesFunctionsV1(root) ? '$root/crowd' : '$root/api/crowd';
+
+  static String _carsUrl(String root) =>
+      _usesFunctionsV1(root) ? '$root/cars' : '$root/api/cars';
+
+  static Map<String, String> _headers(String root, {bool jsonBody = false}) {
+    final headers = <String, String>{};
+    if (jsonBody) {
+      headers['content-type'] = 'application/json; charset=utf-8';
+    }
+    if (_usesFunctionsV1(root) && crowdAnonKey.isNotEmpty) {
+      headers['apikey'] = crowdAnonKey;
+      headers['Authorization'] = 'Bearer $crowdAnonKey';
+    }
+    return headers;
+  }
+
   static Future<String> base() async {
     if (_resolvedBase != null) return _resolvedBase!;
     final configured = crowdEndpoint.trim().replaceAll(RegExp(r'/$'), '');
@@ -66,8 +87,8 @@ class Api {
       if (quote != null && quote > 0) {
         response = await http
             .post(
-              Uri.parse('$root/api/crowd'),
-              headers: {'content-type': 'application/json; charset=utf-8'},
+              Uri.parse(_crowdUrl(root)),
+              headers: _headers(root, jsonBody: true),
               body: jsonEncode({
                 'device': await DeviceId.get(),
                 'brand': brand,
@@ -82,7 +103,7 @@ class Api {
       } else {
         response = await http
             .get(
-              Uri.parse('$root/api/crowd').replace(
+              Uri.parse(_crowdUrl(root)).replace(
                 queryParameters: {
                   'brand': brand,
                   'model': model,
@@ -91,6 +112,7 @@ class Api {
                   'city': city,
                 },
               ),
+              headers: _headers(root),
             )
             .timeout(_timeout);
       }
@@ -113,12 +135,13 @@ class Api {
     try {
       final response = await http
           .get(
-            Uri.parse('$root/api/cars').replace(
+            Uri.parse(_carsUrl(root)).replace(
               queryParameters: {
                 'brand': brand,
                 'device': await DeviceId.get(),
               },
             ),
+            headers: _headers(root),
           )
           .timeout(_timeout);
       if (response.statusCode != 200) {
@@ -165,8 +188,8 @@ class Api {
     try {
       final response = await http
           .post(
-            Uri.parse('$root/api/cars'),
-            headers: {'content-type': 'application/json; charset=utf-8'},
+            Uri.parse(_carsUrl(root)),
+            headers: _headers(root, jsonBody: true),
             body: jsonEncode({
               'device': await DeviceId.get(),
               'brand': brand,

@@ -11,16 +11,20 @@ flutter pub get
 flutter run
 ```
 
-خادم التقارير المحلي:
+الإنتاج الافتراضي يتصل بـ Supabase Edge Functions
+(`.../functions/v1` لـ `health` / `crowd` / `cars`).
+
+خادم التقارير المحلي (Python / SQLite):
 
 ```bash
 TASEER_CROWD_DB=/tmp/taseer-crowd.sqlite3 PORT=8771 python3 ../server/crowd.py
+flutter run --dart-define=TASEER_CROWD_ENDPOINT=http://127.0.0.1:8771
 ```
 
-أو:
+أو Render:
 
 ```bash
-flutter run --dart-define=TASEER_CROWD_ENDPOINT=https://your-host
+flutter run --dart-define=TASEER_CROWD_ENDPOINT=https://taseer-crowd.onrender.com
 ```
 
 معرف التطبيق: `sa.taseer.app`

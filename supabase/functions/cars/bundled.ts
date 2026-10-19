@@ -1,0 +1,194 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+
+export const NEEDED = 3;
+
+export type Json = Record<string, unknown>;
+
+export function json(status: number, payload: Json): Response {
+  return new Response(JSON.stringify(payload), {
+    status,
+    headers: {
+      "content-type": "application/json; charset=utf-8",
+      "cache-control": "no-store",
+      "x-content-type-options": "nosniff",
+    },
+  });
+}
+
+export function admin() {
+  const url = Deno.env.get("SUPABASE_URL");
+  const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!url || !key) throw new Error("missing supabase env");
+  return createClient(url, key, { auth: { persistSession: false } });
+}
+
+export function cleanToken(
+  value: unknown,
+  ok: (text: string) => boolean,
+  limit: number,
+): string | null {
+  const text = String(value ?? "").trim();
+  if (!text || text.length > limit || !ok(text)) return null;
+  return text;
+}
+
+export const validKey = (text: string) =>
+  [...text].every((c) => /[a-zA-Z0-9-]/.test(c));
+export const validModel = (text: string) =>
+  !text.includes("  ") && [...text].every((c) => /[a-zA-Z0-9\- ]/.test(c));
+export const validYear = (text: string) => {
+  const chunks = text.replace("–", "-").split("-");
+  return chunks.length >= 1 && chunks.length <= 2 &&
+    chunks.every((c) => /^\d{4}$/.test(c));
+};
+export const validCity = (text: string) =>
+  [...text].every((c) => c.charCodeAt(0) >= 32 && c !== "<" && c !== ">");
+export const validDevice = (text: string) =>
+  text.length >= 16 && [...text].every((c) => /[a-zA-Z0-9-]/.test(c));
+
+export function number(value: unknown): number | null {
+  if (typeof value === "boolean" || typeof value !== "number") return null;
+  if (!Number.isFinite(value)) return null;
+  return value;
+}
+
+export function roundMoney(value: number): number {
+  return Math.round((value + 1e-9) * 100) / 100;
+}
+
+export async function crowdSummary(
+  brand: string,
+  model: string,
+  yearLabel: string,
+  part: string,
+  city: string,
+) {
+  const sb = admin();
+  const { data: rows, error } = await sb
+    .from("quotes")
+    .select("quote,city")
+    .eq("brand", brand)
+    .eq("model", model)
+    .eq("year_label", yearLabel)
+    .eq("part", part);
+  if (error) throw error;
+  const list = rows ?? [];
+  const count = list.length;
+  const average = count
+    ? roundMoney(list.reduce((s, r) => s + Number(r.quote), 0) / count)
+    : null;
+  const cityRows = list.filter((r) => r.city === city);
+  const cityCount = cityRows.length;
+  const cityAverage = cityCount
+    ? roundMoney(cityRows.reduce((s, r) => s + Number(r.quote), 0) / cityCount)
+    : null;
+  return {
+    ok: true,
+    count,
+    average,
+    ready: count >= NEEDED,
+    needed: NEEDED,
+    city,
+    cityCount,
+    cityAverage,
+    cityReady: cityCount >= NEEDED,
+  };
+}
+
+export async function listCarNotes(brand: string, device: string | null) {
+  const sb = admin();
+  const { data, error } = await sb
+    .from("car_notes")
+    .select("device,model,city,price,includes_fuel,body,updated_at")
+    .eq("brand", brand)
+    .order("updated_at", { ascending: false })
+    .limit(400);
+  if (error) throw error;
+  return (data ?? []).map((row) => ({
+    model: row.model,
+    city: row.city,
+    price: row.price == null ? null : roundMoney(Number(row.price)),
+    includesFuel: Boolean(row.includes_fuel),
+    text: row.body,
+    at: Number(row.updated_at),
+    mine: Boolean(device) && row.device === device,
+  }));
+}
+
+
+const CAR_BRANDS = new Set(["kia", "victory"]);
+
+function parseComment(value: unknown): string | null {
+  const text = String(value ?? "").split(/\s+/).join(" ").trim();
+  if (text.length < 2 || text.length > 240 || /[<>]/.test(text)) return null;
+  return text;
+}
+
+Deno.serve(async (req) => {
+  try {
+    if (req.method === "OPTIONS") {
+      return new Response(null, { status: 204 });
+    }
+    if (req.method === "GET") {
+      const url = new URL(req.url);
+      const brand = cleanToken(url.searchParams.get("brand"), validKey, 40);
+      if (!brand || !CAR_BRANDS.has(brand)) return json(400, { ok: false });
+      let device = cleanToken(url.searchParams.get("device"), validDevice, 64);
+      if (!device) device = null;
+      const notes = await listCarNotes(brand, device);
+      return json(200, { ok: true, brand, notes });
+    }
+    if (req.method !== "POST") return json(405, { ok: false });
+    const payload = await req.json() as Record<string, unknown>;
+    const device = cleanToken(payload.device, validDevice, 64);
+    const brand = cleanToken(payload.brand, validKey, 40);
+    const model = cleanToken(payload.model, validModel, 40);
+    const city = cleanToken(payload.city, validCity, 40);
+    if (!device || !brand || !CAR_BRANDS.has(brand) || !model || !city) {
+      return json(400, { ok: false });
+    }
+    const includes = payload.includesFuel;
+    if (typeof includes !== "boolean") return json(400, { ok: false });
+    let storedPrice: number | null = null;
+    let message = "";
+    if ("price" in payload && payload.price != null && payload.price !== "") {
+      const value = number(payload.price);
+      if (value == null || value < 1000 || value > 5_000_000) {
+        message = "اكتب سعر السيارة بين 1,000 و 5,000,000 ريال، أو اتركه فاضي.";
+      } else {
+        storedPrice = roundMoney(value);
+      }
+    }
+    if (!message && includes && storedPrice == null) {
+      message = "اكتب السعر إذا كان يشمل البنزين.";
+    }
+    const text = parseComment(payload.text);
+    if (!message && text == null) {
+      message = "اكتب تعليقاً من حرفين إلى 240 حرف، بدون رموز HTML.";
+    }
+    if (!message) {
+      const sb = admin();
+      const { error } = await sb.from("car_notes").upsert({
+        device,
+        brand,
+        model,
+        city,
+        price: storedPrice,
+        includes_fuel: includes,
+        body: text,
+        updated_at: Math.floor(Date.now() / 1000),
+      });
+      if (error) throw error;
+    }
+    const notes = await listCarNotes(brand, device);
+    return json(200, {
+      ok: true,
+      accepted: !message,
+      message,
+      notes,
+    });
+  } catch (error) {
+    console.error(error);
+    return json(400, { ok: false });
+  }
+});

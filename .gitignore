@@ -27,3 +27,5 @@ mobile/ios/Flutter/flutter_export_environment.sh
 mobile/android/.gradle/
 mobile/android/app/build/
 mobile/*.iml
+supabase/.temp/
+*.tgz
