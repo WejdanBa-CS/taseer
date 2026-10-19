@@ -1,15 +1,18 @@
 import {
   admin,
+  allowRequest,
   cleanToken,
+  clientIp,
   json,
   listCarNotes,
   number,
+  optionsResponse,
   roundMoney,
   validCity,
   validDevice,
   validKey,
   validModel,
-} from "./_shared/crowd.ts";
+} from "../_shared/crowd.ts";
 
 const CAR_BRANDS = new Set(["kia", "victory"]);
 
@@ -21,29 +24,30 @@ function parseComment(value: unknown): string | null {
 
 Deno.serve(async (req) => {
   try {
-    if (req.method === "OPTIONS") {
-      return new Response(null, { status: 204 });
-    }
+    if (req.method === "OPTIONS") return optionsResponse(req);
+    const ip = clientIp(req);
     if (req.method === "GET") {
+      if (!allowRequest(ip, false)) return json(429, { ok: false }, req);
       const url = new URL(req.url);
       const brand = cleanToken(url.searchParams.get("brand"), validKey, 40);
-      if (!brand || !CAR_BRANDS.has(brand)) return json(400, { ok: false });
+      if (!brand || !CAR_BRANDS.has(brand)) return json(400, { ok: false }, req);
       let device = cleanToken(url.searchParams.get("device"), validDevice, 64);
       if (!device) device = null;
       const notes = await listCarNotes(brand, device);
-      return json(200, { ok: true, brand, notes });
+      return json(200, { ok: true, brand, notes }, req);
     }
-    if (req.method !== "POST") return json(405, { ok: false });
+    if (req.method !== "POST") return json(405, { ok: false }, req);
+    if (!allowRequest(ip, true)) return json(429, { ok: false }, req);
     const payload = await req.json() as Record<string, unknown>;
     const device = cleanToken(payload.device, validDevice, 64);
     const brand = cleanToken(payload.brand, validKey, 40);
     const model = cleanToken(payload.model, validModel, 40);
     const city = cleanToken(payload.city, validCity, 40);
     if (!device || !brand || !CAR_BRANDS.has(brand) || !model || !city) {
-      return json(400, { ok: false });
+      return json(400, { ok: false }, req);
     }
     const includes = payload.includesFuel;
-    if (typeof includes !== "boolean") return json(400, { ok: false });
+    if (typeof includes !== "boolean") return json(400, { ok: false }, req);
     let storedPrice: number | null = null;
     let message = "";
     if ("price" in payload && payload.price != null && payload.price !== "") {
@@ -81,9 +85,9 @@ Deno.serve(async (req) => {
       accepted: !message,
       message,
       notes,
-    });
+    }, req);
   } catch (error) {
     console.error(error);
-    return json(400, { ok: false });
+    return json(400, { ok: false }, req);
   }
 });

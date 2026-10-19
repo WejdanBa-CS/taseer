@@ -1,3 +1,6 @@
-import { json } from "./_shared/crowd.ts";
+import { json, optionsResponse } from "../_shared/crowd.ts";
 
-Deno.serve((_req) => json(200, { ok: true }));
+Deno.serve((req) => {
+  if (req.method === "OPTIONS") return optionsResponse(req);
+  return json(200, { ok: true }, req);
+});

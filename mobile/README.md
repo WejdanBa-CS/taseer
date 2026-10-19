@@ -21,7 +21,7 @@ TASEER_CROWD_DB=/tmp/taseer-crowd.sqlite3 PORT=8771 python3 ../server/crowd.py
 flutter run --dart-define=TASEER_CROWD_ENDPOINT=http://127.0.0.1:8771
 ```
 
-أو Render:
+Render (احتياطي / اختبار فقط، SQLite مؤقت):
 
 ```bash
 flutter run --dart-define=TASEER_CROWD_ENDPOINT=https://taseer-crowd.onrender.com
