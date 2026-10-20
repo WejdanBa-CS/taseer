@@ -434,23 +434,37 @@ class AppState extends ChangeNotifier {
     return currentRows().where((row) => row.part == part).toList();
   }
 
+  bool usesMarketEstimate() {
+    if (brand == null || model == null || yearLabel == null || part == null) {
+      return false;
+    }
+    return rowsForPart().isEmpty;
+  }
+
   ({double low, double high}) priceRange() {
     final lines = Catalog.instance.groupedLines(rowsForPart());
-    if (lines.isEmpty) return (low: 0, high: 0);
-    final lows = lines.map((l) => l.low).toList()..sort();
-    final highs = lines.map((l) => l.high).toList()..sort();
-    return (low: lows.first, high: highs.last);
+    if (lines.isNotEmpty) {
+      final lows = lines.map((l) => l.low).toList()..sort();
+      final highs = lines.map((l) => l.high).toList()..sort();
+      return (low: lows.first, high: highs.last);
+    }
+    final market = part == null ? null : Catalog.instance.marketRangeFor(part!);
+    if (market != null) return market;
+    return (low: 0, high: 0);
   }
 
   String updateLabel() {
     final sources = Catalog.instance.sources;
     final kia = sources['kia']?.updated ?? 'سبتمبر 2025';
     final fuel = sources['aramco']?.updated ?? 'أكتوبر 2026';
+    final market = Catalog.instance.marketUpdated;
     if (screen == AppScreen.costs) {
-      if (brand == 'victory') return 'آخر تحديث للوقود: $fuel. قطع فيكتوري من صفحة الوكيل.';
-      return 'آخر تحديث: قطع الغيار $kia · الوقود $fuel';
+      return 'كتالوج ${Catalog.instance.brands.length} وكالة · الوقود $fuel · تقدير السوق $market';
     }
-    if (brand == 'victory') return 'أسعار فيكتوري كما نشرها الوكيل على صفحته.';
-    return 'آخر تحديث لأسعار القطع: $kia';
+    if (brand != null && Catalog.instance.hasPublishedPrices(brand!)) {
+      if (brand == 'victory') return 'أسعار فيكتوري كما نشرها الوكيل على صفحته.';
+      return 'آخر تحديث لأسعار القطع المنشورة: $kia';
+    }
+    return 'تقدير سوقي للقطع · محدّث $market · قوائم كيا $kia';
   }
 }

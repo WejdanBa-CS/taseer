@@ -1,0 +1,18 @@
+{
+  "note": "تقدير سوقي تقريبي لسعر القطعة الأصلية لحاله في السعودية، مبني على نطاقات قوائم الوكلاء المنشورة. مو بديل عن قائمة الوكيل الرسمية.",
+  "updated": "أكتوبر 2026",
+  "parts": {
+    "oil-filter": {"low": 30, "high": 90},
+    "air-filter": {"low": 70, "high": 170},
+    "ac-filter": {"low": 100, "high": 200},
+    "fuel-filter": {"low": 100, "high": 250},
+    "front-pads": {"low": 450, "high": 900},
+    "rear-pads": {"low": 280, "high": 480},
+    "plugs": {"low": 35, "high": 140},
+    "glow-plug": {"low": 110, "high": 250},
+    "coolant": {"low": 55, "high": 85},
+    "wiper": {"low": 90, "high": 190},
+    "timing": {"low": 220, "high": 480},
+    "belt": {"low": 50, "high": 260}
+  }
+}

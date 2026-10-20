@@ -25,6 +25,8 @@ flutter:
   uses-material-design: true
   assets:
     - assets/data/parts.json
+    - assets/data/dealers.json
+    - assets/data/market_ranges.json
     - assets/data/cities.json
     - assets/data/sources.json
     - assets/data/fuels.json
