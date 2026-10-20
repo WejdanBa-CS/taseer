@@ -80,14 +80,39 @@ class Catalog {
     return list;
   }
 
+  /// سنوات معقولة فقط (يتجاهل أخطاء مثل 2028–2031 في بعض الصفوف).
+  static bool yearLabelPlausible(String label) {
+    final now = DateTime.now().year;
+    final found = RegExp(r'\d{4}').allMatches(label).map((m) => int.parse(m.group(0)!));
+    if (found.isEmpty) return false;
+    return found.every((year) => year >= 1990 && year <= now + 1);
+  }
+
   List<String> yearsFor(String brand, String model) {
     final labels = <String>{};
     for (final row in rows) {
-      if (row.brand == brand && row.model == model) labels.add(row.yearLabel);
+      if (row.brand == brand && row.model == model && yearLabelPlausible(row.yearLabel)) {
+        labels.add(row.yearLabel);
+      }
     }
     final list = labels.toList()
       ..sort((a, b) => b.compareTo(a));
     return list;
+  }
+
+  /// نص مختصر لنطاق السنوات الظاهرة للموديل، مثل «من 2016 إلى 2026».
+  String yearSpanLabel(String brand, String model) {
+    final years = <int>{};
+    for (final label in yearsFor(brand, model)) {
+      for (final match in RegExp(r'\d{4}').allMatches(label)) {
+        years.add(int.parse(match.group(0)!));
+      }
+    }
+    if (years.isEmpty) return 'موديل من كتالوج الوكيل';
+    final low = years.reduce((a, b) => a < b ? a : b);
+    final high = years.reduce((a, b) => a > b ? a : b);
+    if (low == high) return 'موديل $low';
+    return 'من $low إلى $high';
   }
 
   List<PartRow> selectedRows(String brand, String model, String yearLabel) {

@@ -114,6 +114,7 @@ class _CostsScreenState extends State<CostsScreen> {
   String? pickBrand;
   String? pickModel;
   String? pickYear;
+  String modelSearch = '';
 
   static const upkeepMonths = {
     'oil-filter': 6,
@@ -143,6 +144,7 @@ class _CostsScreenState extends State<CostsScreen> {
       pickBrand = id;
       pickModel = null;
       pickYear = null;
+      modelSearch = '';
     });
   }
 
@@ -224,7 +226,14 @@ class _CostsScreenState extends State<CostsScreen> {
     final aramco = Catalog.instance.sources['aramco'];
     final models = costBrand == null
         ? const <CarModel>[]
-        : Catalog.instance.modelsForBrand(costBrand);
+        : Catalog.instance.modelsForBrand(costBrand).where((m) {
+            if (Catalog.instance.yearsFor(costBrand, m.id).isEmpty) return false;
+            final q = modelSearch.trim();
+            if (q.isEmpty) return true;
+            final n = q.toLowerCase();
+            return m.name.toLowerCase().contains(n) ||
+                m.id.toLowerCase().contains(n);
+          }).toList();
     final years = costBrand == null || costModel == null
         ? const <String>[]
         : Catalog.instance.yearsFor(costBrand, costModel);
@@ -264,16 +273,31 @@ class _CostsScreenState extends State<CostsScreen> {
                 .toList(),
             onChanged: _pickBrand,
           ),
-          if (pickBrand != null)
+          if (pickBrand != null) ...[
+            TextField(
+              decoration: const InputDecoration(
+                hintText: 'ابحث عن الموديل',
+                prefixIcon: Icon(Icons.search),
+              ),
+              onChanged: (value) => setState(() => modelSearch = value),
+            ),
             DropdownButtonFormField<String>(
-              key: ValueKey('cost-model-$pickBrand-$pickModel'),
-              initialValue: pickModel,
+              key: ValueKey('cost-model-$pickBrand-$pickModel-$modelSearch'),
+              initialValue: models.any((m) => m.id == pickModel) ? pickModel : null,
               decoration: const InputDecoration(hintText: 'الموديل'),
               items: models
-                  .map((m) => DropdownMenuItem(value: m.id, child: Text(m.name)))
+                  .map(
+                    (m) => DropdownMenuItem(
+                      value: m.id,
+                      child: Text(
+                        '${m.name} · ${Catalog.instance.yearSpanLabel(pickBrand!, m.id)}',
+                      ),
+                    ),
+                  )
                   .toList(),
               onChanged: _pickModel,
             ),
+          ],
           if (pickBrand != null && pickModel != null)
             DropdownButtonFormField<String>(
               key: ValueKey('cost-year-$pickModel-$pickYear'),
@@ -344,12 +368,8 @@ class _CostsScreenState extends State<CostsScreen> {
           SoftNote(
             [
               if (fuelMonth > 0) 'وقود الشهر: ${money(fuelMonth)} ريال',
-              if (aramco != null) aramco.note,
-            ].join(' · '),
-          ),
-          TextButton(
-            onPressed: aramco == null ? null : () => openUrl(aramco.url),
-            child: const Text('صفحة أسعار أرامكو'),
+              if (aramco != null) 'المصدر: ${aramco.name}. ${aramco.note}',
+            ].where((s) => s.isNotEmpty).join(' · '),
           ),
           const Text('التأمين السنوي', style: TextStyle(fontWeight: FontWeight.w700)),
           TextField(

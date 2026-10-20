@@ -6,6 +6,7 @@ import '../data/catalog.dart';
 import '../data/models.dart';
 import '../services/advice.dart';
 import '../theme.dart';
+import '../widgets/car_store.dart';
 import '../widgets/common.dart';
 
 class CityScreen extends StatefulWidget {
@@ -114,6 +115,8 @@ class CarScreen extends StatefulWidget {
 class _CarScreenState extends State<CarScreen> {
   final budgetCtrl = TextEditingController();
   final queryCtrl = TextEditingController();
+  final brandQueryCtrl = TextEditingController();
+  String brandQuery = '';
 
   @override
   void initState() {
@@ -127,6 +130,7 @@ class _CarScreenState extends State<CarScreen> {
   void dispose() {
     budgetCtrl.dispose();
     queryCtrl.dispose();
+    brandQueryCtrl.dispose();
     super.dispose();
   }
 
@@ -177,29 +181,54 @@ class _CarScreenState extends State<CarScreen> {
   Widget build(BuildContext context) {
     final state = widget.state;
     if (state.carStage == CarStage.brand) {
+      final brands = Catalog.instance.brands.where((brand) {
+        final q = norm(brandQuery);
+        if (q.isEmpty) return true;
+        return norm(brand.name).contains(q) || norm(brand.id).contains(q);
+      }).toList();
       return ShellCard(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _bar('وش الوكالة؟', state),
-            const BrandEyebrow('الوكالة'),
-            const PageTitle('وش سيارتك؟'),
-            const SectionLead('اختر الوكالة، ثم حدد الموديل والسنة.'),
-            ...Catalog.instance.brands.map(
-              (brand) {
-                final count = Catalog.instance.modelsForBrand(brand.id).length;
-                return ChoiceTile(
-                  title: brand.name,
-                  subtitle: '$count موديل · أسعار قطع منشورة داخل التطبيق',
-                  onTap: () => state.selectBrand(brand.id),
-                );
-              },
+            const BrandEyebrow('تصفّح'),
+            const PageTitle('اختَر وكالتك'),
+            const SectionLead('تصفّح مثل المتجر: وكالة، ثم الموديل، ثم السنة.'),
+            TextField(
+              controller: brandQueryCtrl,
+              decoration: const InputDecoration(
+                hintText: 'ابحث عن الوكالة',
+                prefixIcon: Icon(Icons.search),
+              ),
+              onChanged: (value) => setState(() => brandQuery = value),
             ),
-            ChoiceTile(
-              title: 'تويوتا',
-              subtitle: 'خارج التطبيق · متجر الوكيل',
-              onTap: () => openUrl(Catalog.instance.sources['toyota']!.url),
-            ),
+            const SizedBox(height: 12),
+            if (brands.isEmpty)
+              const SoftNote('ما لقينا هالوكالة في القائمة.')
+            else
+              ...brands.map(
+                (brand) {
+                  final models = Catalog.instance
+                      .modelsForBrand(brand.id)
+                      .where((m) => Catalog.instance.yearsFor(brand.id, m.id).isNotEmpty)
+                      .toList();
+                  final sample = models.take(3).map((m) => m.name).join('، ');
+                  final cover = brand.id == 'victory'
+                      ? carVisualAsset(CarVisualKind.van)
+                      : carVisualAsset(CarVisualKind.suv);
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: BrandStoreCard(
+                      title: brand.name,
+                      subtitle: models.isEmpty
+                          ? 'لا يوجد موديلات منشورة حالياً'
+                          : '${models.length} موديل · $sample',
+                      imageAsset: cover,
+                      onTap: () => state.selectBrand(brand.id),
+                    ),
+                  );
+                },
+              ),
           ],
         ),
       );
@@ -208,8 +237,11 @@ class _CarScreenState extends State<CarScreen> {
     if (state.carStage == CarStage.model) {
       final q = norm(state.modelQuery);
       final models = Catalog.instance.modelsForBrand(state.brand!).where((model) {
+        if (Catalog.instance.yearsFor(state.brand!, model.id).isEmpty) return false;
         if (q.isEmpty) return true;
-        return norm(model.name).contains(q) || norm(model.id).contains(q);
+        return norm(model.name).contains(q) ||
+            norm(model.id).contains(q) ||
+            norm(model.id.replaceAll('-', ' ')).contains(q);
       }).toList();
       final active = filterActive() && state.carNotesStatus == 'ready';
       final matched = <({CarModel model, List<CarNote> notes})>[];
@@ -237,14 +269,22 @@ class _CarScreenState extends State<CarScreen> {
         status = 'الفلتر على أسعار كتبها المستخدمون، مو سعر الوكيل.';
       }
 
+      final shown = <({CarModel model, List<CarNote> notes})>[
+        ...matched,
+        if (active && state.showRest) ...rest,
+      ];
+
       return ShellCard(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _bar('نوع سيارة ${Catalog.instance.brandById(state.brand!).name}', state),
+            _bar('موديلات ${Catalog.instance.brandById(state.brand!).name}', state),
             TextField(
               controller: queryCtrl,
-              decoration: const InputDecoration(hintText: 'ابحث عن الموديل'),
+              decoration: const InputDecoration(
+                hintText: 'ابحث في المتجر (سبورتاج، سيراتو…)',
+                prefixIcon: Icon(Icons.search),
+              ),
               onChanged: (value) {
                 state.modelQuery = value;
                 setState(() {});
@@ -262,56 +302,67 @@ class _CarScreenState extends State<CarScreen> {
                 setState(() {});
               },
             ),
-            const SizedBox(height: 8),
-            Row(
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
               children: [
                 for (final item in const [
                   ('all', 'الكل'),
                   ('yes', 'تشمل البنزين'),
                   ('no', 'بدون بنزين'),
                 ])
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 3),
-                      child: ChoiceTile(
-                        title: item.$2,
-                        selected: state.fuelMode == item.$1,
-                        onTap: () {
-                          state.fuelMode = item.$1;
-                          state.showRest = false;
-                          setState(() {});
-                        },
-                      ),
+                  FilterChip(
+                    label: Text(item.$2),
+                    selected: state.fuelMode == item.$1,
+                    onSelected: (_) {
+                      state.fuelMode = item.$1;
+                      state.showRest = false;
+                      setState(() {});
+                    },
+                    selectedColor: TaseerColors.brandSoft,
+                    checkmarkColor: TaseerColors.brand,
+                    labelStyle: TextStyle(
+                      color: state.fuelMode == item.$1 ? TaseerColors.brand : TaseerColors.ink,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 12,
+                    ),
+                    side: BorderSide(
+                      color: state.fuelMode == item.$1 ? TaseerColors.brand : TaseerColors.line,
                     ),
                   ),
               ],
             ),
             SoftNote(status),
-            const SizedBox(height: 4),
+            const SizedBox(height: 8),
             if (models.isEmpty)
               const SoftNote('ما لقينا هذا الموديل في القوائم المنشورة')
             else if (active && matched.isEmpty)
-              const SoftNote('ما فيه سيارة تناسب هالميزانية في تعليقات المستخدمين.'),
-            ...matched.map(
-              (item) => ChoiceTile(
-                title: item.model.name,
-                subtitle: priceLine(item.notes),
-                onTap: () => state.selectModel(item.model.id),
+              const SoftNote('ما فيه سيارة تناسب هالميزانية في تعليقات المستخدمين.')
+            else
+              CarStoreGrid(
+                itemCount: shown.length,
+                itemBuilder: (context, index) {
+                  final item = shown[index];
+                  final span = Catalog.instance.yearSpanLabel(state.brand!, item.model.id);
+                  final prices = priceLine(item.notes);
+                  final kind = carVisualKind(state.brand!, item.model.id);
+                  return CarStoreCard(
+                    title: item.model.name,
+                    subtitle: prices.isEmpty ? span : '$span · $prices',
+                    imageAsset: carVisualAsset(kind),
+                    onTap: () => state.selectModel(item.model.id),
+                  );
+                },
               ),
-            ),
             if (active && rest.isNotEmpty) ...[
+              const SizedBox(height: 8),
               OutlinedButton(
                 onPressed: () => setState(() => state.showRest = !state.showRest),
-                child: Text(state.showRest ? 'أخفِ باقي السيارات' : 'أظهر باقي السيارات (${rest.length})'),
-              ),
-              if (state.showRest)
-                ...rest.map(
-                  (item) => ChoiceTile(
-                    title: item.model.name,
-                    subtitle: priceLine(item.notes),
-                    onTap: () => state.selectModel(item.model.id),
-                  ),
+                child: Text(
+                  state.showRest ? 'أخفِ باقي السيارات' : 'أظهر باقي السيارات (${rest.length})',
                 ),
+              ),
             ],
           ],
         ),
@@ -723,8 +774,23 @@ class _ResultScreenState extends State<ResultScreen> {
             ),
           ),
           const SoftNote('هذا سعر القطعة الأصلية عند الوكيل لحاله، مو إجمالي الورشة. الأجرة غير داخلة، والسعر موحّد في كل المدن.'),
-          if (source != null)
+          if (source != null) ...[
+            const SizedBox(height: 10),
+            const Text(
+              'المصدر',
+              style: TextStyle(
+                color: TaseerColors.muted,
+                fontWeight: FontWeight.w700,
+                fontSize: 12,
+              ),
+            ),
+            const SizedBox(height: 4),
             SoftNote('${source.name}. ${source.note}'),
+            if (Catalog.instance.sources['commerce'] != null)
+              SoftNote(
+                '${Catalog.instance.sources['commerce']!.name}. ${Catalog.instance.sources['commerce']!.note}',
+              ),
+          ],
           const SizedBox(height: 8),
           _crowdBlock(state, crowd),
           const SizedBox(height: 12),

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../app_state.dart';
-import '../data/catalog.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
 import 'extra_screens.dart';
@@ -46,10 +45,6 @@ class HomeShell extends StatelessWidget {
                         padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
                         children: [
                           _body(),
-                          if (state.screen != AppScreen.home) ...[
-                            const SizedBox(height: 22),
-                            _sources(),
-                          ],
                         ],
                       ),
                     ),
@@ -150,49 +145,6 @@ class HomeShell extends StatelessWidget {
     }
   }
 
-  Widget _sources() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        const Text(
-          'المصادر المعتمدة',
-          style: TextStyle(
-            color: TaseerColors.muted,
-            fontWeight: FontWeight.w700,
-            fontSize: 12,
-          ),
-        ),
-        const SizedBox(height: 8),
-        ...Catalog.instance.sources.values.map(
-          (source) => Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: InkWell(
-              onTap: () => openUrl(source.url),
-              child: Text.rich(
-                TextSpan(
-                  children: [
-                    TextSpan(
-                      text: source.name,
-                      style: const TextStyle(
-                        color: TaseerColors.brand,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 12,
-                      ),
-                    ),
-                    TextSpan(
-                      text: '. ${source.note}',
-                      style: const TextStyle(color: TaseerColors.muted, fontSize: 12, height: 1.55),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _footer() {
     return Container(
       width: double.infinity,
@@ -242,7 +194,7 @@ class HomeShell extends StatelessWidget {
     final items = <(NavTab, String, IconData)>[
       (NavTab.home, 'الرئيسية', Icons.home_outlined),
       (NavTab.cars, 'السيارات', Icons.directions_car_outlined),
-      (NavTab.parts, 'قطع الغيار', Icons.settings_outlined),
+      (NavTab.parts, 'صيانة وقطع', Icons.build_outlined),
     ];
     return Container(
       padding: EdgeInsets.fromLTRB(12, 8, 12, 8 + (safeBottom > 0 ? safeBottom : 4)),
@@ -333,7 +285,7 @@ class WelcomeScreen extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         const Text(
-          'سعر القطعة الأصلية',
+          'أسعار الصيانة والقطع',
           textAlign: TextAlign.center,
           style: TextStyle(fontSize: 30, fontWeight: FontWeight.w800, height: 1.35),
         ),
@@ -354,66 +306,35 @@ class WelcomeScreen extends StatelessWidget {
         ),
         const SizedBox(height: 14),
         const Text(
-          'ومن سعر القطعة إلى تكلفة السيارة كلها.\nاعرف، قارن، وخذ قرارك على بيّنة.',
+          'اعرف سعر الصيانة والقطع الأصلية من الوكيل،\nقارن مع الورشة، وخذ قرارك على بيّنة.',
           textAlign: TextAlign.center,
           style: TextStyle(color: TaseerColors.muted, height: 1.7, fontSize: 14),
         ),
         const SizedBox(height: 28),
         ElevatedButton(
-          onPressed: state.openCosts,
+          onPressed: state.goFlow,
           child: const Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.directions_car_outlined, size: 20),
+              Icon(Icons.build_outlined, size: 20),
               SizedBox(width: 8),
-              Expanded(child: Text('استكشف السيارات وتكلفتها')),
+              Expanded(child: Text('اعرف سعر الصيانة والقطع')),
               Icon(Icons.arrow_back_ios_new, size: 16),
             ],
           ),
         ),
         const SizedBox(height: 10),
         OutlinedButton(
-          onPressed: state.goFlow,
+          onPressed: state.openCosts,
           child: const Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.settings_outlined, size: 20),
+              Icon(Icons.directions_car_outlined, size: 20),
               SizedBox(width: 8),
-              Expanded(child: Text('اعرف سعر قطعتك')),
+              Expanded(child: Text('تكلفة السيارة الشهرية')),
               Icon(Icons.arrow_back_ios_new, size: 16),
             ],
           ),
-        ),
-        const SizedBox(height: 18),
-        Wrap(
-          alignment: WrapAlignment.center,
-          spacing: 14,
-          runSpacing: 8,
-          children: const [
-            _Perk('التصفّح بدون تسجيل'),
-            _Perk('كيا وفيكتوري في التطبيق'),
-            _Perk('تويوتا عبر متجر الوكيل'),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-class _Perk extends StatelessWidget {
-  const _Perk(this.label);
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        const Icon(Icons.check, size: 12, color: TaseerColors.brand),
-        const SizedBox(width: 4),
-        Text(
-          label,
-          style: const TextStyle(fontSize: 10, color: TaseerColors.muted),
         ),
       ],
     );
