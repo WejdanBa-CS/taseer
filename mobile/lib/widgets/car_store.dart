@@ -1,13 +1,31 @@
 import 'package:flutter/material.dart';
 
+import '../data/models.dart';
 import '../theme.dart';
 
 /// شكل بصري للموديل داخل شبكة المتجر.
 enum CarVisualKind { suv, sedan, mpv, hatch, van }
 
+CarVisualKind coverKindForBrand(Brand brand) {
+  switch (brand.cover) {
+    case 'suv':
+      return CarVisualKind.suv;
+    case 'mpv':
+      return CarVisualKind.mpv;
+    case 'hatch':
+      return CarVisualKind.hatch;
+    case 'van':
+      return CarVisualKind.van;
+    default:
+      return CarVisualKind.sedan;
+  }
+}
+
 CarVisualKind carVisualKind(String brandId, String modelId) {
   final id = modelId.toLowerCase();
-  if (brandId == 'victory') return CarVisualKind.van;
+  if (brandId == 'victory' || brandId == 'foton' || brandId == 'maxus' || brandId == 'isuzu') {
+    return CarVisualKind.van;
+  }
   if (id.contains('carnival') || id.contains('carens')) return CarVisualKind.mpv;
   if (id.contains('picanto') || id.contains('sonet') || id.contains('pegas')) {
     return CarVisualKind.hatch;

@@ -77,23 +77,28 @@ class AdviceEngine {
     bool crowdReady = false,
     double? crowdAverage,
     int crowdCount = 0,
+    bool marketEstimate = false,
   }) {
     final tone = toneOf(quote, low, high);
-    final published = rangeText(low, high);
+    final band = rangeText(low, high);
     final asked = '${money(quote)} ريال';
     final note = partNote[part] ?? 'اسأل عن اسم القطعة كما هي في فاتورة الوكيل.';
     final learned = crowdReady && crowdAverage != null && crowdCount > 0
         ? ' متوسط تقارير المستخدمين ${money(crowdAverage)} ريال من $crowdCount تقارير.'
         : '';
     final gap = quote > high ? quote - high : low - quote;
+    final basis = marketEstimate ? 'تقدير سوقي تقريبي' : 'سعر منشور عند الوكيل';
+    final basisVerb = marketEstimate ? 'تقديرها السوقي' : 'منشورة';
 
     if (tone == 'close') {
       final edge = quote > high ? high : low;
       return AdviceResult(
         tone: tone,
-        headline: 'قريب من سعر القطعة الأصلية. هذا قبل الأجرة.',
+        headline: marketEstimate
+            ? 'قريب من التقدير السوقي للقطعة الأصلية. هذا قبل الأجرة.'
+            : 'قريب من سعر القطعة الأصلية. هذا قبل الأجرة.',
         script:
-            '$partName منشورة بـ $published. الرقم اللي كتبته $asked، والفرق عن حد السعر المنشور حوالي ${money((quote - edge).abs())} ريال. هذا مو سعر الورشة كامل. $note$learned',
+            '$partName $basisVerb بـ $band. الرقم اللي كتبته $asked، والفرق حوالي ${money((quote - edge).abs())} ريال. هذا مو سعر الورشة كامل. $note$learned',
         questions: const [],
       );
     }
@@ -101,9 +106,9 @@ class AdviceEngine {
     if (tone == 'low') {
       return AdviceResult(
         tone: tone,
-        headline: 'الرقم أقل بكثير من سعر القطعة الأصلية.',
+        headline: 'الرقم أقل بكثير من $basis.',
         script:
-            'طلبوا $asked بينما $partName منشورة عند الوكيل بـ $published. الفرق حوالي ${money(gap)} ريال تحت السعر المنشور. غالباً القطعة تجارية أو الرقم ناقص. قول لهم: أبي أعرف من وين القطعة، وهل عليها ضمان مكتوب وفاتورة. إذا ما فيه ضمان، الرخص هنا غالي. $note$learned',
+            'طلبوا $asked بينما $partName $basisVerb بـ $band. الفرق حوالي ${money(gap)} ريال تحت النطاق. غالباً القطعة تجارية أو الرقم ناقص. قول لهم: أبي أعرف من وين القطعة، وهل عليها ضمان مكتوب وفاتورة. إذا ما فيه ضمان، الرخص هنا غالي. $note$learned',
         questions: const [
           'القطعة أصلية من الوكيل ولا تجارية؟',
           'وين الضمان المكتوب وكم مدته؟',
@@ -117,9 +122,11 @@ class AdviceEngine {
       tone: tone,
       headline: strong
           ? 'أعلى بكثير. لا توافق قبل ما تشوف الفاتورة مفصّلة.'
-          : 'أعلى من السعر المنشور. اطلب تفصيل القطعة والأجرة.',
+          : marketEstimate
+              ? 'أعلى من التقدير السوقي. اطلب تفصيل القطعة والأجرة.'
+              : 'أعلى من السعر المنشور. اطلب تفصيل القطعة والأجرة.',
       script:
-          'طلبوا $asked و$partName منشورة بـ $published. الزيادة حوالي ${money(gap)} ريال قبل ما نحسب الأجرة. قول لهم بالحرف: ابغى سعر القطعة لحاله وسعر الأجرة لحاله، والقطعة أصلية بفاتورة. ${strong ? 'إذا رفضوا التفصيل، لا توافق اليوم وخذ السيارة.' : 'إذا فصّلوا والزيادة كلها أجرة معقولة، القرار يرجع لك.'} $note$learned',
+          'طلبوا $asked و$partName $basisVerb بـ $band. الزيادة حوالي ${money(gap)} ريال قبل ما نحسب الأجرة. قول لهم بالحرف: ابغى سعر القطعة لحاله وسعر الأجرة لحاله، والقطعة أصلية بفاتورة. ${strong ? 'إذا رفضوا التفصيل، لا توافق اليوم وخذ السيارة.' : 'إذا فصّلوا والزيادة كلها أجرة معقولة، القرار يرجع لك.'} $note$learned',
       questions: const [
         'كم سعر القطعة لحاله وكم الأجرة لحاله؟',
         'هل القطعة أصلية وعليها فاتورة الوكيل؟',

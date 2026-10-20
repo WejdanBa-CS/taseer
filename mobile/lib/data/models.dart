@@ -10,13 +10,36 @@ class City {
 }
 
 class Brand {
-  const Brand({required this.id, required this.name});
+  const Brand({required this.id, required this.name, this.cover = 'sedan'});
   final String id;
   final String name;
+  final String cover;
 
   factory Brand.fromJson(Map<String, dynamic> json) => Brand(
         id: json['id'] as String,
         name: json['name'] as String,
+        cover: json['cover'] as String? ?? 'sedan',
+      );
+}
+
+class DealerModel {
+  const DealerModel({
+    required this.id,
+    required this.name,
+    required this.yearFrom,
+    required this.yearTo,
+  });
+
+  final String id;
+  final String name;
+  final int yearFrom;
+  final int yearTo;
+
+  factory DealerModel.fromJson(Map<String, dynamic> json) => DealerModel(
+        id: json['id'] as String,
+        name: json['name'] as String,
+        yearFrom: (json['yearFrom'] as num).toInt(),
+        yearTo: (json['yearTo'] as num).toInt(),
       );
 }
 

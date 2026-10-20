@@ -12,6 +12,10 @@ class Catalog {
     required this.cities,
     required this.sources,
     required this.fuels,
+    required this.dealerModels,
+    required this.marketRanges,
+    required this.marketNote,
+    required this.marketUpdated,
   });
 
   final List<PartDef> parts;
@@ -20,6 +24,10 @@ class Catalog {
   final List<City> cities;
   final Map<String, SourceInfo> sources;
   final List<FuelGrade> fuels;
+  final Map<String, List<DealerModel>> dealerModels;
+  final Map<String, ({double low, double high})> marketRanges;
+  final String marketNote;
+  final String marketUpdated;
 
   static Catalog? _instance;
   static Catalog get instance {
@@ -34,20 +42,53 @@ class Catalog {
     if (_instance != null) return _instance!;
     final partsJson = jsonDecode(await rootBundle.loadString('assets/data/parts.json'))
         as Map<String, dynamic>;
+    final dealersJson = jsonDecode(await rootBundle.loadString('assets/data/dealers.json'))
+        as Map<String, dynamic>;
     final citiesJson =
         jsonDecode(await rootBundle.loadString('assets/data/cities.json')) as List<dynamic>;
     final sourcesJson = jsonDecode(await rootBundle.loadString('assets/data/sources.json'))
         as Map<String, dynamic>;
     final fuelsJson =
         jsonDecode(await rootBundle.loadString('assets/data/fuels.json')) as List<dynamic>;
+    final marketJson = jsonDecode(await rootBundle.loadString('assets/data/market_ranges.json'))
+        as Map<String, dynamic>;
+
+    final dealerBrands = (dealersJson['brands'] as List)
+        .map((item) => Brand.fromJson(item as Map<String, dynamic>))
+        .toList();
+    final dealerModels = <String, List<DealerModel>>{};
+    for (final raw in dealersJson['brands'] as List) {
+      final map = raw as Map<String, dynamic>;
+      final id = map['id'] as String;
+      dealerModels[id] = (map['models'] as List? ?? const [])
+          .map((item) => DealerModel.fromJson(item as Map<String, dynamic>))
+          .toList();
+    }
+
+    // ترتيب السوق السعودي من dealers.json، مع إبقاء أي وكالة أسعار إضافية.
+    final brands = [...dealerBrands];
+    for (final raw in partsJson['brands'] as List) {
+      final brand = Brand.fromJson(raw as Map<String, dynamic>);
+      if (!brands.any((b) => b.id == brand.id)) {
+        brands.add(brand);
+      }
+    }
+
+    final marketParts = marketJson['parts'] as Map<String, dynamic>? ?? const {};
+    final marketRanges = <String, ({double low, double high})>{};
+    for (final entry in marketParts.entries) {
+      final value = entry.value as Map<String, dynamic>;
+      marketRanges[entry.key] = (
+        low: (value['low'] as num).toDouble(),
+        high: (value['high'] as num).toDouble(),
+      );
+    }
 
     final catalog = Catalog._(
       parts: (partsJson['parts'] as List)
           .map((item) => PartDef.fromJson(item as Map<String, dynamic>))
           .toList(),
-      brands: (partsJson['brands'] as List)
-          .map((item) => Brand.fromJson(item as Map<String, dynamic>))
-          .toList(),
+      brands: brands,
       rows: (partsJson['rows'] as List)
           .map((item) => PartRow.fromJson(item as Map<String, dynamic>))
           .toList(),
@@ -56,6 +97,10 @@ class Catalog {
         (key, value) => MapEntry(key, SourceInfo.fromJson(value as Map<String, dynamic>)),
       ),
       fuels: fuelsJson.map((item) => FuelGrade.fromJson(item as Map<String, dynamic>)).toList(),
+      dealerModels: dealerModels,
+      marketRanges: marketRanges,
+      marketNote: '${marketJson['note'] ?? ''}',
+      marketUpdated: '${marketJson['updated'] ?? ''}',
     );
     _instance = catalog;
     return catalog;
@@ -70,10 +115,20 @@ class Catalog {
     return null;
   }
 
+  bool hasPublishedPrices(String brand) => rows.any((row) => row.brand == brand);
+
+  bool hasPublishedPricesForCar(String brand, String model, String yearLabel) =>
+      selectedRows(brand, model, yearLabel).isNotEmpty;
+
+  ({double low, double high})? marketRangeFor(String partId) => marketRanges[partId];
+
   List<CarModel> modelsForBrand(String brand) {
     final seen = <String, String>{};
     for (final row in rows) {
       if (row.brand == brand) seen[row.model] = row.modelAr;
+    }
+    for (final model in dealerModels[brand] ?? const <DealerModel>[]) {
+      seen.putIfAbsent(model.id, () => model.name);
     }
     final list = seen.entries.map((e) => CarModel(id: e.key, name: e.value)).toList()
       ..sort((a, b) => a.name.compareTo(b.name));
@@ -93,6 +148,17 @@ class Catalog {
     for (final row in rows) {
       if (row.brand == brand && row.model == model && yearLabelPlausible(row.yearLabel)) {
         labels.add(row.yearLabel);
+      }
+    }
+    if (labels.isEmpty) {
+      for (final dealer in dealerModels[brand] ?? const <DealerModel>[]) {
+        if (dealer.id != model) continue;
+        final now = DateTime.now().year;
+        final from = dealer.yearFrom;
+        final to = dealer.yearTo > now + 1 ? now + 1 : dealer.yearTo;
+        for (var year = to; year >= from; year--) {
+          if (year >= 1990 && year <= now + 1) labels.add('$year');
+        }
       }
     }
     final list = labels.toList()
@@ -123,6 +189,10 @@ class Catalog {
 
   List<PartDef> partsFor(String brand, String model, String yearLabel) {
     final ids = selectedRows(brand, model, yearLabel).map((row) => row.part).toSet();
+    if (ids.isEmpty) {
+      // أي سيارة في الكتالوج تقدر تدخل مسار القطع عبر التقدير السوقي.
+      return List<PartDef>.from(parts);
+    }
     return parts.where((part) => ids.contains(part.id)).toList();
   }
 

@@ -193,7 +193,9 @@ class _CarScreenState extends State<CarScreen> {
             _bar('وش الوكالة؟', state),
             const BrandEyebrow('تصفّح'),
             const PageTitle('اختَر وكالتك'),
-            const SectionLead('تصفّح مثل المتجر: وكالة، ثم الموديل، ثم السنة.'),
+            const SectionLead(
+              'كتالوج كبير لمعظم وكالات السعودية: اختَر وكالتك وموديلك، قارن سعر الورشة على القطعة. القوائم الرسمية لكيا وفيكتوري، وباقي الوكالات بتقدير سوقي واضح.',
+            ),
             TextField(
               controller: brandQueryCtrl,
               decoration: const InputDecoration(
@@ -213,16 +215,17 @@ class _CarScreenState extends State<CarScreen> {
                       .where((m) => Catalog.instance.yearsFor(brand.id, m.id).isNotEmpty)
                       .toList();
                   final sample = models.take(3).map((m) => m.name).join('، ');
-                  final cover = brand.id == 'victory'
-                      ? carVisualAsset(CarVisualKind.van)
-                      : carVisualAsset(CarVisualKind.suv);
+                  final priced = Catalog.instance.hasPublishedPrices(brand.id);
+                  final cover = carVisualAsset(coverKindForBrand(brand));
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 12),
                     child: BrandStoreCard(
                       title: brand.name,
                       subtitle: models.isEmpty
-                          ? 'لا يوجد موديلات منشورة حالياً'
-                          : '${models.length} موديل · $sample',
+                          ? 'لا يوجد موديلات حالياً'
+                          : priced
+                              ? '${models.length} موديل · أسعار وكيل منشورة · $sample'
+                              : '${models.length} موديل · تقدير سوقي · $sample',
                       imageAsset: cover,
                       onTap: () => state.selectBrand(brand.id),
                     ),
@@ -578,7 +581,15 @@ class _PartScreenState extends State<PartScreen> {
               TextButton(onPressed: state.goBack, child: const Text('رجوع')),
             ],
           ),
-          SectionLead('$modelName ${state.yearLabel}. القطع الظاهرة هي اللي لها سعر في قائمة الوكيل.'),
+          SectionLead(
+            Catalog.instance.hasPublishedPricesForCar(
+              state.brand!,
+              state.model!,
+              state.yearLabel!,
+            )
+                ? '$modelName ${state.yearLabel}. القطع الظاهرة من قائمة الوكيل المنشورة.'
+                : '$modelName ${state.yearLabel}. القطع للتقدير السوقي والمقارنة مع الورشة، لأن قائمة هالوكالة ما انحمّلت بعد.',
+          ),
           TextField(
             decoration: const InputDecoration(hintText: 'صف المشكلة، مثل صرير فرامل'),
             onChanged: (value) => setState(() => symptom = value),
@@ -670,6 +681,7 @@ class _ResultScreenState extends State<ResultScreen> {
           crowdReady: state.loggedIn && (state.crowd?.ready ?? false),
           crowdAverage: state.crowd?.average,
           crowdCount: state.crowd?.count ?? 0,
+          marketEstimate: state.usesMarketEstimate(),
         );
       });
       return;
@@ -688,6 +700,7 @@ class _ResultScreenState extends State<ResultScreen> {
           crowdReady: state.loggedIn && (state.crowd?.ready ?? false),
           crowdAverage: state.crowd?.average,
           crowdCount: state.crowd?.count ?? 0,
+          marketEstimate: state.usesMarketEstimate(),
         );
       });
     } else {
@@ -705,7 +718,10 @@ class _ResultScreenState extends State<ResultScreen> {
     final partName = Catalog.instance.partById(state.part!)!.name;
     final lines = Catalog.instance.groupedLines(state.rowsForPart());
     final range = state.priceRange();
-    final sourceId = state.rowsForPart().isNotEmpty ? state.rowsForPart().first.source : 'kia';
+    final marketEstimate = state.usesMarketEstimate();
+    final sourceId = state.rowsForPart().isNotEmpty
+        ? state.rowsForPart().first.source
+        : 'market';
     final source = Catalog.instance.sources[sourceId];
     final crowd = state.crowd;
 
@@ -754,26 +770,38 @@ class _ResultScreenState extends State<ResultScreen> {
               ],
             ),
           ),
-          ...lines.map(
-            (line) => Container(
-              margin: const EdgeInsets.only(top: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              decoration: BoxDecoration(
-                color: TaseerColors.soft,
-                borderRadius: BorderRadius.circular(14),
+          if (lines.isNotEmpty)
+            ...lines.map(
+              (line) => Container(
+                margin: const EdgeInsets.only(top: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                decoration: BoxDecoration(
+                  color: TaseerColors.soft,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(child: Text(line.label, style: const TextStyle(fontWeight: FontWeight.w600))),
+                    Text(
+                      line.low == line.high
+                          ? '${money(line.low)} ريال'
+                          : '${money(line.low)} – ${money(line.high)} ريال',
+                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                  ],
+                ),
               ),
-              child: Row(
-                children: [
-                  Expanded(child: Text(line.label, style: const TextStyle(fontWeight: FontWeight.w600))),
-                  Text(
-                    line.low == line.high ? '${money(line.low)} ريال' : '${money(line.low)} – ${money(line.high)} ريال',
-                    style: const TextStyle(fontWeight: FontWeight.w700),
-                  ),
-                ],
-              ),
+            )
+          else if (marketEstimate)
+            SoftNote(
+              'تقدير سوقي للقطعة الأصلية لحاله: ${money(range.low)} – ${money(range.high)} ريال.',
+              color: TaseerColors.brand,
             ),
+          SoftNote(
+            marketEstimate
+                ? 'هذا تقدير سوقي مو فاتورة وكيل. الأجرة غير داخلة. استخدمه تقارن عرض الورشة لين تنشر الوكالة قائمتها.'
+                : 'هذا سعر القطعة الأصلية عند الوكيل لحاله، مو إجمالي الورشة. الأجرة غير داخلة، والسعر موحّد في كل المدن.',
           ),
-          const SoftNote('هذا سعر القطعة الأصلية عند الوكيل لحاله، مو إجمالي الورشة. الأجرة غير داخلة، والسعر موحّد في كل المدن.'),
           if (source != null) ...[
             const SizedBox(height: 10),
             const Text(
@@ -786,7 +814,7 @@ class _ResultScreenState extends State<ResultScreen> {
             ),
             const SizedBox(height: 4),
             SoftNote('${source.name}. ${source.note}'),
-            if (Catalog.instance.sources['commerce'] != null)
+            if (!marketEstimate && Catalog.instance.sources['commerce'] != null)
               SoftNote(
                 '${Catalog.instance.sources['commerce']!.name}. ${Catalog.instance.sources['commerce']!.note}',
               ),

@@ -1,0 +1,3166 @@
+{
+  "brands": [
+    {
+      "id": "toyota",
+      "name": "تويوتا",
+      "cover": "sedan",
+      "models": [
+        {
+          "id": "CAMRY",
+          "name": "كامري",
+          "yearFrom": 2015,
+          "yearTo": 2026
+        },
+        {
+          "id": "COROLLA",
+          "name": "كورولا",
+          "yearFrom": 2015,
+          "yearTo": 2026
+        },
+        {
+          "id": "YARIS",
+          "name": "ياريس",
+          "yearFrom": 2015,
+          "yearTo": 2026
+        },
+        {
+          "id": "RAV4",
+          "name": "راف فور",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "LAND-CRUISER",
+          "name": "لاند كروزر",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "PRADO",
+          "name": "برادو",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "FORTUNER",
+          "name": "فورتشنر",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "HILUX",
+          "name": "هايلكس",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "INNOVA",
+          "name": "إنوفا",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "RUSH",
+          "name": "راش",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "RAIZE",
+          "name": "رايز",
+          "yearFrom": 2021,
+          "yearTo": 2026
+        },
+        {
+          "id": "URBAN-CRUISER",
+          "name": "أوربان كروزر",
+          "yearFrom": 2021,
+          "yearTo": 2026
+        },
+        {
+          "id": "CROWN",
+          "name": "كراون",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        },
+        {
+          "id": "SEQUOIA",
+          "name": "سيكويا",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        },
+        {
+          "id": "TACOMA",
+          "name": "تاكوما",
+          "yearFrom": 2024,
+          "yearTo": 2026
+        },
+        {
+          "id": "GRANVIA",
+          "name": "جرانفيا",
+          "yearFrom": 2020,
+          "yearTo": 2026
+        },
+        {
+          "id": "COROLLA-CROSS",
+          "name": "كورولا كروس",
+          "yearFrom": 2021,
+          "yearTo": 2026
+        },
+        {
+          "id": "HIGHLANDER",
+          "name": "هايلاندر",
+          "yearFrom": 2020,
+          "yearTo": 2026
+        },
+        {
+          "id": "SUPRA",
+          "name": "سوبرا",
+          "yearFrom": 2020,
+          "yearTo": 2026
+        },
+        {
+          "id": "BZ4X",
+          "name": "bZ4X",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        },
+        {
+          "id": "HIACE",
+          "name": "هايس",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "COASTER",
+          "name": "كوستر",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "lexus",
+      "name": "لكزس",
+      "cover": "sedan",
+      "models": [
+        {
+          "id": "ES",
+          "name": "ES",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "IS",
+          "name": "IS",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "LS",
+          "name": "LS",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "RX",
+          "name": "RX",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "NX",
+          "name": "NX",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "UX",
+          "name": "UX",
+          "yearFrom": 2019,
+          "yearTo": 2026
+        },
+        {
+          "id": "GX",
+          "name": "GX",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "LX",
+          "name": "LX",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "TX",
+          "name": "TX",
+          "yearFrom": 2024,
+          "yearTo": 2026
+        },
+        {
+          "id": "LM",
+          "name": "LM",
+          "yearFrom": 2024,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "hyundai",
+      "name": "هيونداي",
+      "cover": "sedan",
+      "models": [
+        {
+          "id": "ACCENT",
+          "name": "أكسنت",
+          "yearFrom": 2015,
+          "yearTo": 2026
+        },
+        {
+          "id": "ELANTRA",
+          "name": "إلنترا",
+          "yearFrom": 2015,
+          "yearTo": 2026
+        },
+        {
+          "id": "SONATA",
+          "name": "سوناتا",
+          "yearFrom": 2015,
+          "yearTo": 2026
+        },
+        {
+          "id": "AZERA",
+          "name": "أزيرة",
+          "yearFrom": 2015,
+          "yearTo": 2026
+        },
+        {
+          "id": "TUCSON",
+          "name": "توسان",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "SANTA-FE",
+          "name": "سنتافي",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "CRETA",
+          "name": "كريتا",
+          "yearFrom": 2017,
+          "yearTo": 2026
+        },
+        {
+          "id": "VENUE",
+          "name": "فينيو",
+          "yearFrom": 2020,
+          "yearTo": 2026
+        },
+        {
+          "id": "PALISADE",
+          "name": "باليسيد",
+          "yearFrom": 2020,
+          "yearTo": 2026
+        },
+        {
+          "id": "STARIA",
+          "name": "ستاريا",
+          "yearFrom": 2022,
+          "yearTo": 2026
+        },
+        {
+          "id": "IONIQ5",
+          "name": "أيونيك 5",
+          "yearFrom": 2022,
+          "yearTo": 2026
+        },
+        {
+          "id": "IONIQ6",
+          "name": "أيونيك 6",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        },
+        {
+          "id": "KONA",
+          "name": "كونا",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "H1",
+          "name": "H1",
+          "yearFrom": 2016,
+          "yearTo": 2024
+        },
+        {
+          "id": "PORTER",
+          "name": "بورتر",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "I10",
+          "name": "i10",
+          "yearFrom": 2015,
+          "yearTo": 2026
+        },
+        {
+          "id": "I20",
+          "name": "i20",
+          "yearFrom": 2016,
+          "yearTo": 2024
+        },
+        {
+          "id": "BAYON",
+          "name": "بايون",
+          "yearFrom": 2022,
+          "yearTo": 2026
+        },
+        {
+          "id": "SANTA-CRUZ",
+          "name": "سانتا كروز",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        },
+        {
+          "id": "STARIA-LOAD",
+          "name": "ستاريا لود",
+          "yearFrom": 2022,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "kia",
+      "name": "كيا",
+      "cover": "suv",
+      "models": []
+    },
+    {
+      "id": "genesis",
+      "name": "جينيسيس",
+      "cover": "sedan",
+      "models": [
+        {
+          "id": "G70",
+          "name": "G70",
+          "yearFrom": 2019,
+          "yearTo": 2026
+        },
+        {
+          "id": "G80",
+          "name": "G80",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "G90",
+          "name": "G90",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "GV60",
+          "name": "GV60",
+          "yearFrom": 2022,
+          "yearTo": 2026
+        },
+        {
+          "id": "GV70",
+          "name": "GV70",
+          "yearFrom": 2021,
+          "yearTo": 2026
+        },
+        {
+          "id": "GV80",
+          "name": "GV80",
+          "yearFrom": 2021,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "nissan",
+      "name": "نيسان",
+      "cover": "suv",
+      "models": [
+        {
+          "id": "SUNNY",
+          "name": "صني",
+          "yearFrom": 2015,
+          "yearTo": 2026
+        },
+        {
+          "id": "ALTIMA",
+          "name": "التيما",
+          "yearFrom": 2015,
+          "yearTo": 2026
+        },
+        {
+          "id": "MAXIMA",
+          "name": "ماكسيما",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "KICKS",
+          "name": "كيكس",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "XTRAIL",
+          "name": "إكس تريل",
+          "yearFrom": 2015,
+          "yearTo": 2026
+        },
+        {
+          "id": "PATHFINDER",
+          "name": "باثفايندر",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "PATROL",
+          "name": "باترول",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "NAVARA",
+          "name": "نافارا",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "URVAN",
+          "name": "أورفان",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "SENTRA",
+          "name": "سنترا",
+          "yearFrom": 2020,
+          "yearTo": 2026
+        },
+        {
+          "id": "ARIYA",
+          "name": "أريا",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        },
+        {
+          "id": "JUKE",
+          "name": "جوك",
+          "yearFrom": 2016,
+          "yearTo": 2024
+        },
+        {
+          "id": "QASHQAI",
+          "name": "قاشقاي",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "ROGUE",
+          "name": "روج",
+          "yearFrom": 2021,
+          "yearTo": 2025
+        },
+        {
+          "id": "Z",
+          "name": "Z",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "infiniti",
+      "name": "إنفينيتي",
+      "cover": "suv",
+      "models": [
+        {
+          "id": "Q50",
+          "name": "Q50",
+          "yearFrom": 2016,
+          "yearTo": 2025
+        },
+        {
+          "id": "QX50",
+          "name": "QX50",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "QX55",
+          "name": "QX55",
+          "yearFrom": 2021,
+          "yearTo": 2026
+        },
+        {
+          "id": "QX60",
+          "name": "QX60",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "QX80",
+          "name": "QX80",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "honda",
+      "name": "هوندا",
+      "cover": "sedan",
+      "models": [
+        {
+          "id": "CITY",
+          "name": "سيتي",
+          "yearFrom": 2015,
+          "yearTo": 2026
+        },
+        {
+          "id": "CIVIC",
+          "name": "سيفيك",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "ACCORD",
+          "name": "أكورد",
+          "yearFrom": 2015,
+          "yearTo": 2026
+        },
+        {
+          "id": "HR-V",
+          "name": "HR-V",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "CR-V",
+          "name": "CR-V",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "PILOT",
+          "name": "بايلوت",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "ZR-V",
+          "name": "ZR-V",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        },
+        {
+          "id": "ODYSSEY",
+          "name": "أوديسي",
+          "yearFrom": 2018,
+          "yearTo": 2025
+        },
+        {
+          "id": "PASSPORT",
+          "name": "باسبورت",
+          "yearFrom": 2020,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "mazda",
+      "name": "مازدا",
+      "cover": "sedan",
+      "models": [
+        {
+          "id": "MAZDA3",
+          "name": "مازدا 3",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "MAZDA6",
+          "name": "مازدا 6",
+          "yearFrom": 2016,
+          "yearTo": 2025
+        },
+        {
+          "id": "CX-3",
+          "name": "CX-3",
+          "yearFrom": 2016,
+          "yearTo": 2024
+        },
+        {
+          "id": "CX-30",
+          "name": "CX-30",
+          "yearFrom": 2020,
+          "yearTo": 2026
+        },
+        {
+          "id": "CX-5",
+          "name": "CX-5",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "CX-60",
+          "name": "CX-60",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        },
+        {
+          "id": "CX-90",
+          "name": "CX-90",
+          "yearFrom": 2024,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "mitsubishi",
+      "name": "ميتسوبيشي",
+      "cover": "suv",
+      "models": [
+        {
+          "id": "ATTRAGE",
+          "name": "أتراج",
+          "yearFrom": 2015,
+          "yearTo": 2026
+        },
+        {
+          "id": "LANCER",
+          "name": "لانسر",
+          "yearFrom": 2015,
+          "yearTo": 2018
+        },
+        {
+          "id": "ASX",
+          "name": "ASX",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "ECLIPSE-CROSS",
+          "name": "إكليبس كروس",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "OUTLANDER",
+          "name": "أوتلاندر",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "PAJERO",
+          "name": "باجيرو",
+          "yearFrom": 2015,
+          "yearTo": 2021
+        },
+        {
+          "id": "MONTERO-SPORT",
+          "name": "مونتيرو سبورت",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "L200",
+          "name": "L200",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "XPANDER",
+          "name": "إكسباندر",
+          "yearFrom": 2019,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "suzuki",
+      "name": "سوزوكي",
+      "cover": "hatch",
+      "models": [
+        {
+          "id": "SWIFT",
+          "name": "سويفت",
+          "yearFrom": 2015,
+          "yearTo": 2026
+        },
+        {
+          "id": "DZIRE",
+          "name": "ديزاير",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "BALENO",
+          "name": "بالينو",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "CIAZ",
+          "name": "سياز",
+          "yearFrom": 2016,
+          "yearTo": 2024
+        },
+        {
+          "id": "ERTIGA",
+          "name": "إرتيجا",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "VITARA",
+          "name": "فيتارا",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "JIMNY",
+          "name": "جيمني",
+          "yearFrom": 2019,
+          "yearTo": 2026
+        },
+        {
+          "id": "FRONX",
+          "name": "فرونكس",
+          "yearFrom": 2024,
+          "yearTo": 2026
+        },
+        {
+          "id": "GRAND-VITARA",
+          "name": "جراند فيتارا",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "subaru",
+      "name": "سوبارو",
+      "cover": "suv",
+      "models": [
+        {
+          "id": "IMPREZA",
+          "name": "إمبريزا",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "LEGACY",
+          "name": "ليجاسي",
+          "yearFrom": 2018,
+          "yearTo": 2025
+        },
+        {
+          "id": "XV",
+          "name": "XV",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "FORESTER",
+          "name": "فورستر",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "OUTBACK",
+          "name": "أوت باك",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "ASCENT",
+          "name": "أسنت",
+          "yearFrom": 2020,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "isuzu",
+      "name": "إيسوزو",
+      "cover": "van",
+      "models": [
+        {
+          "id": "D-MAX",
+          "name": "دي ماكس",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "MU-X",
+          "name": "MU-X",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "NPR",
+          "name": "NPR",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "ford",
+      "name": "فورد",
+      "cover": "suv",
+      "models": [
+        {
+          "id": "TERRITORY",
+          "name": "تيريتوري",
+          "yearFrom": 2020,
+          "yearTo": 2026
+        },
+        {
+          "id": "ESCAPE",
+          "name": "إسكيب",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "EDGE",
+          "name": "إدج",
+          "yearFrom": 2016,
+          "yearTo": 2024
+        },
+        {
+          "id": "EXPLORER",
+          "name": "إكسبلورر",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "EXPEDITION",
+          "name": "إكسبيديشن",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "RANGER",
+          "name": "رينجر",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "F-150",
+          "name": "F-150",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "MUSTANG",
+          "name": "موستانج",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "BRONCO",
+          "name": "برونكو",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        },
+        {
+          "id": "TRANSIT",
+          "name": "ترانزيت",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "MAVERICK",
+          "name": "مافيريك",
+          "yearFrom": 2022,
+          "yearTo": 2026
+        },
+        {
+          "id": "EVEREST",
+          "name": "إفرست",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        },
+        {
+          "id": "TOURNEO",
+          "name": "تورنيو",
+          "yearFrom": 2020,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "chevrolet",
+      "name": "شيفروليه",
+      "cover": "suv",
+      "models": [
+        {
+          "id": "SPARK",
+          "name": "سبارك",
+          "yearFrom": 2015,
+          "yearTo": 2022
+        },
+        {
+          "id": "AVEO",
+          "name": "أفيو",
+          "yearFrom": 2015,
+          "yearTo": 2020
+        },
+        {
+          "id": "MALIBU",
+          "name": "ماليبو",
+          "yearFrom": 2016,
+          "yearTo": 2025
+        },
+        {
+          "id": "CAPTIVA",
+          "name": "كابتيفا",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "EQUINOX",
+          "name": "إكوينوكس",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "TRAVERSE",
+          "name": "ترافيرس",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "TAHOE",
+          "name": "تاهو",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "SUBURBAN",
+          "name": "سوبربان",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "BLAZER",
+          "name": "بليزر",
+          "yearFrom": 2020,
+          "yearTo": 2026
+        },
+        {
+          "id": "SILVERADO",
+          "name": "سيلفرادو",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "GROOVE",
+          "name": "جروف",
+          "yearFrom": 2021,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "gmc",
+      "name": "جي إم سي",
+      "cover": "suv",
+      "models": [
+        {
+          "id": "TERRAIN",
+          "name": "تيرين",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "ACADIA",
+          "name": "أكاديا",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "YUKON",
+          "name": "يوكن",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "SIERRA",
+          "name": "سييرا",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "HUMMER-EV",
+          "name": "همر EV",
+          "yearFrom": 2024,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "cadillac",
+      "name": "كاديلاك",
+      "cover": "sedan",
+      "models": [
+        {
+          "id": "CT4",
+          "name": "CT4",
+          "yearFrom": 2021,
+          "yearTo": 2026
+        },
+        {
+          "id": "CT5",
+          "name": "CT5",
+          "yearFrom": 2021,
+          "yearTo": 2026
+        },
+        {
+          "id": "XT4",
+          "name": "XT4",
+          "yearFrom": 2020,
+          "yearTo": 2026
+        },
+        {
+          "id": "XT5",
+          "name": "XT5",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "XT6",
+          "name": "XT6",
+          "yearFrom": 2020,
+          "yearTo": 2026
+        },
+        {
+          "id": "ESCALADE",
+          "name": "إسكاليد",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "LYRIQ",
+          "name": "ليريك",
+          "yearFrom": 2024,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "jeep",
+      "name": "جيب",
+      "cover": "suv",
+      "models": [
+        {
+          "id": "RENEGADE",
+          "name": "رينيجيد",
+          "yearFrom": 2018,
+          "yearTo": 2025
+        },
+        {
+          "id": "COMPASS",
+          "name": "كومباس",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "WRANGLER",
+          "name": "رانجلر",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "GRAND-CHEROKEE",
+          "name": "جراند شيروكي",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "GLADIATOR",
+          "name": "جلاديتور",
+          "yearFrom": 2021,
+          "yearTo": 2026
+        },
+        {
+          "id": "AVENGER",
+          "name": "أفينجر",
+          "yearFrom": 2024,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "dodge",
+      "name": "دودج",
+      "cover": "sedan",
+      "models": [
+        {
+          "id": "CHARGER",
+          "name": "تشارجر",
+          "yearFrom": 2016,
+          "yearTo": 2024
+        },
+        {
+          "id": "CHALLENGER",
+          "name": "تشالنجر",
+          "yearFrom": 2016,
+          "yearTo": 2024
+        },
+        {
+          "id": "DURANGO",
+          "name": "دورانجو",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "HORNET",
+          "name": "هورنت",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "ram",
+      "name": "رام",
+      "cover": "van",
+      "models": [
+        {
+          "id": "1500",
+          "name": "1500",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "2500",
+          "name": "2500",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "PROMASTER",
+          "name": "بروماستر",
+          "yearFrom": 2020,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "mercedes",
+      "name": "مرسيدس",
+      "cover": "sedan",
+      "models": [
+        {
+          "id": "A-CLASS",
+          "name": "فئة A",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "C-CLASS",
+          "name": "فئة C",
+          "yearFrom": 2015,
+          "yearTo": 2026
+        },
+        {
+          "id": "E-CLASS",
+          "name": "فئة E",
+          "yearFrom": 2015,
+          "yearTo": 2026
+        },
+        {
+          "id": "S-CLASS",
+          "name": "فئة S",
+          "yearFrom": 2015,
+          "yearTo": 2026
+        },
+        {
+          "id": "CLA",
+          "name": "CLA",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "GLA",
+          "name": "GLA",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "GLB",
+          "name": "GLB",
+          "yearFrom": 2020,
+          "yearTo": 2026
+        },
+        {
+          "id": "GLC",
+          "name": "GLC",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "GLE",
+          "name": "GLE",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "GLS",
+          "name": "GLS",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "G-CLASS",
+          "name": "فئة G",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "V-CLASS",
+          "name": "فئة V",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "EQE",
+          "name": "EQE",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        },
+        {
+          "id": "EQS",
+          "name": "EQS",
+          "yearFrom": 2022,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "bmw",
+      "name": "بي إم دبليو",
+      "cover": "sedan",
+      "models": [
+        {
+          "id": "1-SERIES",
+          "name": "الفئة 1",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "2-SERIES",
+          "name": "الفئة 2",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "3-SERIES",
+          "name": "الفئة 3",
+          "yearFrom": 2015,
+          "yearTo": 2026
+        },
+        {
+          "id": "4-SERIES",
+          "name": "الفئة 4",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "5-SERIES",
+          "name": "الفئة 5",
+          "yearFrom": 2015,
+          "yearTo": 2026
+        },
+        {
+          "id": "7-SERIES",
+          "name": "الفئة 7",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "X1",
+          "name": "X1",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "X2",
+          "name": "X2",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "X3",
+          "name": "X3",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "X4",
+          "name": "X4",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "X5",
+          "name": "X5",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "X6",
+          "name": "X6",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "X7",
+          "name": "X7",
+          "yearFrom": 2019,
+          "yearTo": 2026
+        },
+        {
+          "id": "IX",
+          "name": "iX",
+          "yearFrom": 2022,
+          "yearTo": 2026
+        },
+        {
+          "id": "I4",
+          "name": "i4",
+          "yearFrom": 2022,
+          "yearTo": 2026
+        },
+        {
+          "id": "I5",
+          "name": "i5",
+          "yearFrom": 2024,
+          "yearTo": 2026
+        },
+        {
+          "id": "I7",
+          "name": "i7",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "mini",
+      "name": "ميني",
+      "cover": "hatch",
+      "models": [
+        {
+          "id": "COOPER",
+          "name": "كوبر",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "COUNTRYMAN",
+          "name": "كانتري مان",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "CLUBMAN",
+          "name": "كلب مان",
+          "yearFrom": 2016,
+          "yearTo": 2024
+        },
+        {
+          "id": "ACEMAN",
+          "name": "إيس مان",
+          "yearFrom": 2025,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "audi",
+      "name": "أودي",
+      "cover": "sedan",
+      "models": [
+        {
+          "id": "A3",
+          "name": "A3",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "A4",
+          "name": "A4",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "A6",
+          "name": "A6",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "A8",
+          "name": "A8",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "Q2",
+          "name": "Q2",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "Q3",
+          "name": "Q3",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "Q5",
+          "name": "Q5",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "Q7",
+          "name": "Q7",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "Q8",
+          "name": "Q8",
+          "yearFrom": 2019,
+          "yearTo": 2026
+        },
+        {
+          "id": "E-TRON",
+          "name": "e-tron",
+          "yearFrom": 2020,
+          "yearTo": 2026
+        },
+        {
+          "id": "Q8-ETRON",
+          "name": "Q8 e-tron",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "volkswagen",
+      "name": "فولكس واجن",
+      "cover": "sedan",
+      "models": [
+        {
+          "id": "POLO",
+          "name": "بولو",
+          "yearFrom": 2016,
+          "yearTo": 2024
+        },
+        {
+          "id": "GOLF",
+          "name": "جولف",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "PASSAT",
+          "name": "باسات",
+          "yearFrom": 2016,
+          "yearTo": 2024
+        },
+        {
+          "id": "JETTA",
+          "name": "جيتا",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "TIGUAN",
+          "name": "تيجوان",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "TERAMONT",
+          "name": "تيرامونت",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "TOUAREG",
+          "name": "طوارق",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "ID4",
+          "name": "ID.4",
+          "yearFrom": 2022,
+          "yearTo": 2026
+        },
+        {
+          "id": "ID6",
+          "name": "ID.6",
+          "yearFrom": 2022,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "porsche",
+      "name": "بورشه",
+      "cover": "suv",
+      "models": [
+        {
+          "id": "718",
+          "name": "718",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "911",
+          "name": "911",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "PANAMERA",
+          "name": "باناميرا",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "MACAN",
+          "name": "ماكان",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "CAYENNE",
+          "name": "كايين",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "TAYCAN",
+          "name": "تايكان",
+          "yearFrom": 2020,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "landrover",
+      "name": "لاند روفر",
+      "cover": "suv",
+      "models": [
+        {
+          "id": "DEFENDER",
+          "name": "ديفندر",
+          "yearFrom": 2020,
+          "yearTo": 2026
+        },
+        {
+          "id": "DISCOVERY",
+          "name": "ديسكفري",
+          "yearFrom": 2017,
+          "yearTo": 2026
+        },
+        {
+          "id": "DISCOVERY-SPORT",
+          "name": "ديسكفري سبورت",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "RANGE-ROVER",
+          "name": "رينج روفر",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "RANGE-ROVER-SPORT",
+          "name": "رينج روفر سبورت",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "RANGE-ROVER-VELAR",
+          "name": "فيلار",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "RANGE-ROVER-EVOQUE",
+          "name": "إيفوك",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "jaguar",
+      "name": "جاكوار",
+      "cover": "sedan",
+      "models": [
+        {
+          "id": "XE",
+          "name": "XE",
+          "yearFrom": 2016,
+          "yearTo": 2024
+        },
+        {
+          "id": "XF",
+          "name": "XF",
+          "yearFrom": 2016,
+          "yearTo": 2025
+        },
+        {
+          "id": "F-PACE",
+          "name": "F-Pace",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "E-PACE",
+          "name": "E-Pace",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "I-PACE",
+          "name": "I-Pace",
+          "yearFrom": 2019,
+          "yearTo": 2025
+        },
+        {
+          "id": "F-TYPE",
+          "name": "F-Type",
+          "yearFrom": 2016,
+          "yearTo": 2025
+        }
+      ]
+    },
+    {
+      "id": "volvo",
+      "name": "فولفو",
+      "cover": "suv",
+      "models": [
+        {
+          "id": "S60",
+          "name": "S60",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "S90",
+          "name": "S90",
+          "yearFrom": 2017,
+          "yearTo": 2026
+        },
+        {
+          "id": "XC40",
+          "name": "XC40",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "XC60",
+          "name": "XC60",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "XC90",
+          "name": "XC90",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "EX30",
+          "name": "EX30",
+          "yearFrom": 2024,
+          "yearTo": 2026
+        },
+        {
+          "id": "EX90",
+          "name": "EX90",
+          "yearFrom": 2025,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "renault",
+      "name": "رينو",
+      "cover": "sedan",
+      "models": [
+        {
+          "id": "SYMBOL",
+          "name": "سيمبول",
+          "yearFrom": 2015,
+          "yearTo": 2022
+        },
+        {
+          "id": "MEGANE",
+          "name": "ميجان",
+          "yearFrom": 2016,
+          "yearTo": 2025
+        },
+        {
+          "id": "TALISMAN",
+          "name": "تاليسمان",
+          "yearFrom": 2016,
+          "yearTo": 2022
+        },
+        {
+          "id": "DUSTER",
+          "name": "داستر",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "KOLEOS",
+          "name": "كوليوس",
+          "yearFrom": 2017,
+          "yearTo": 2025
+        },
+        {
+          "id": "CAPTUR",
+          "name": "كابتشر",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "ARKANA",
+          "name": "أركانا",
+          "yearFrom": 2022,
+          "yearTo": 2026
+        },
+        {
+          "id": "AUSTRAL",
+          "name": "أوسترال",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "peugeot",
+      "name": "بيجو",
+      "cover": "sedan",
+      "models": [
+        {
+          "id": "208",
+          "name": "208",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "301",
+          "name": "301",
+          "yearFrom": 2015,
+          "yearTo": 2024
+        },
+        {
+          "id": "308",
+          "name": "308",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "508",
+          "name": "508",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "2008",
+          "name": "2008",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "3008",
+          "name": "3008",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "5008",
+          "name": "5008",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "TRAVELLER",
+          "name": "ترافلر",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "citroen",
+      "name": "سيتروين",
+      "cover": "mpv",
+      "models": [
+        {
+          "id": "C3",
+          "name": "C3",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "C4",
+          "name": "C4",
+          "yearFrom": 2021,
+          "yearTo": 2026
+        },
+        {
+          "id": "C5-AIRCROSS",
+          "name": "C5 إيركروس",
+          "yearFrom": 2019,
+          "yearTo": 2026
+        },
+        {
+          "id": "BERLINGO",
+          "name": "برلينجو",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "JUMPY",
+          "name": "جامبي",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "skoda",
+      "name": "سكودا",
+      "cover": "sedan",
+      "models": [
+        {
+          "id": "FABIA",
+          "name": "فابيا",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "OCTAVIA",
+          "name": "أوكتافيا",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "SUPERB",
+          "name": "سوبيرب",
+          "yearFrom": 2016,
+          "yearTo": 2026
+        },
+        {
+          "id": "KAROQ",
+          "name": "كاروك",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "KODIAQ",
+          "name": "كودياك",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "KUSHAQ",
+          "name": "كوشاك",
+          "yearFrom": 2021,
+          "yearTo": 2026
+        },
+        {
+          "id": "ENYAQ",
+          "name": "إنياك",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "geely",
+      "name": "جيلي",
+      "cover": "sedan",
+      "models": [
+        {
+          "id": "COOLRAY",
+          "name": "كول راي",
+          "yearFrom": 2020,
+          "yearTo": 2026
+        },
+        {
+          "id": "AZKARRA",
+          "name": "أزكارا",
+          "yearFrom": 2021,
+          "yearTo": 2025
+        },
+        {
+          "id": "TUGELLA",
+          "name": "توجيلا",
+          "yearFrom": 2021,
+          "yearTo": 2026
+        },
+        {
+          "id": "OKAVANGO",
+          "name": "أوكافانجو",
+          "yearFrom": 2022,
+          "yearTo": 2026
+        },
+        {
+          "id": "EMGRAND",
+          "name": "إمجراند",
+          "yearFrom": 2022,
+          "yearTo": 2026
+        },
+        {
+          "id": "GEOMETRY-C",
+          "name": "جيومتري C",
+          "yearFrom": 2022,
+          "yearTo": 2025
+        },
+        {
+          "id": "MONJARO",
+          "name": "مونجارو",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        },
+        {
+          "id": "STARRAY",
+          "name": "ستاراي",
+          "yearFrom": 2024,
+          "yearTo": 2026
+        },
+        {
+          "id": "EX5",
+          "name": "EX5",
+          "yearFrom": 2025,
+          "yearTo": 2026
+        },
+        {
+          "id": "GX3-PRO",
+          "name": "GX3 برو",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        },
+        {
+          "id": "PREFACE",
+          "name": "بريفيس",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "zeekr",
+      "name": "زيكر",
+      "cover": "sedan",
+      "models": [
+        {
+          "id": "001",
+          "name": "001",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        },
+        {
+          "id": "007",
+          "name": "007",
+          "yearFrom": 2024,
+          "yearTo": 2026
+        },
+        {
+          "id": "X",
+          "name": "X",
+          "yearFrom": 2024,
+          "yearTo": 2026
+        },
+        {
+          "id": "7X",
+          "name": "7X",
+          "yearFrom": 2025,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "lynkco",
+      "name": "لينك آند كو",
+      "cover": "suv",
+      "models": [
+        {
+          "id": "01",
+          "name": "01",
+          "yearFrom": 2022,
+          "yearTo": 2026
+        },
+        {
+          "id": "05",
+          "name": "05",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        },
+        {
+          "id": "06",
+          "name": "06",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        },
+        {
+          "id": "08",
+          "name": "08",
+          "yearFrom": 2024,
+          "yearTo": 2026
+        },
+        {
+          "id": "09",
+          "name": "09",
+          "yearFrom": 2024,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "byd",
+      "name": "بي واي دي",
+      "cover": "sedan",
+      "models": [
+        {
+          "id": "ATTO3",
+          "name": "أتو 3",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        },
+        {
+          "id": "HAN",
+          "name": "هان",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        },
+        {
+          "id": "TANG",
+          "name": "تانج",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        },
+        {
+          "id": "SEAL",
+          "name": "سيل",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        },
+        {
+          "id": "DOLPHIN",
+          "name": "دولفين",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        },
+        {
+          "id": "SONG-PLUS",
+          "name": "سونج بلس",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        },
+        {
+          "id": "SHARK",
+          "name": "شارك",
+          "yearFrom": 2024,
+          "yearTo": 2026
+        },
+        {
+          "id": "SEALION7",
+          "name": "سيل أيون 7",
+          "yearFrom": 2025,
+          "yearTo": 2026
+        },
+        {
+          "id": "SEAL-U",
+          "name": "سيل U",
+          "yearFrom": 2024,
+          "yearTo": 2026
+        },
+        {
+          "id": "QIN-PLUS",
+          "name": "تشين بلس",
+          "yearFrom": 2024,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "chery",
+      "name": "شيري",
+      "cover": "suv",
+      "models": [
+        {
+          "id": "ARRIZO5",
+          "name": "أريزو 5",
+          "yearFrom": 2018,
+          "yearTo": 2025
+        },
+        {
+          "id": "ARRIZO6",
+          "name": "أريزو 6",
+          "yearFrom": 2020,
+          "yearTo": 2024
+        },
+        {
+          "id": "ARRIZO8",
+          "name": "أريزو 8",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        },
+        {
+          "id": "TIGGO2",
+          "name": "تيجو 2",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "TIGGO3",
+          "name": "تيجو 3",
+          "yearFrom": 2018,
+          "yearTo": 2024
+        },
+        {
+          "id": "TIGGO4",
+          "name": "تيجو 4",
+          "yearFrom": 2019,
+          "yearTo": 2026
+        },
+        {
+          "id": "TIGGO7",
+          "name": "تيجو 7",
+          "yearFrom": 2019,
+          "yearTo": 2026
+        },
+        {
+          "id": "TIGGO8",
+          "name": "تيجو 8",
+          "yearFrom": 2019,
+          "yearTo": 2026
+        },
+        {
+          "id": "TIGGO9",
+          "name": "تيجو 9",
+          "yearFrom": 2024,
+          "yearTo": 2026
+        },
+        {
+          "id": "TIGGO8-PRO",
+          "name": "تيجو 8 برو",
+          "yearFrom": 2021,
+          "yearTo": 2026
+        },
+        {
+          "id": "ARRIZO8-PRO",
+          "name": "أريزو 8 برو",
+          "yearFrom": 2024,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "jetour",
+      "name": "جيتور",
+      "cover": "suv",
+      "models": [
+        {
+          "id": "X70",
+          "name": "X70",
+          "yearFrom": 2021,
+          "yearTo": 2026
+        },
+        {
+          "id": "X70-PLUS",
+          "name": "X70 بلس",
+          "yearFrom": 2022,
+          "yearTo": 2026
+        },
+        {
+          "id": "X90-PLUS",
+          "name": "X90 بلس",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        },
+        {
+          "id": "DASHING",
+          "name": "داشينج",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        },
+        {
+          "id": "T1",
+          "name": "T1",
+          "yearFrom": 2024,
+          "yearTo": 2026
+        },
+        {
+          "id": "T2",
+          "name": "T2",
+          "yearFrom": 2024,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "exeed",
+      "name": "إكسيد",
+      "cover": "suv",
+      "models": [
+        {
+          "id": "TXL",
+          "name": "TXL",
+          "yearFrom": 2021,
+          "yearTo": 2026
+        },
+        {
+          "id": "VX",
+          "name": "VX",
+          "yearFrom": 2022,
+          "yearTo": 2026
+        },
+        {
+          "id": "RX",
+          "name": "RX",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        },
+        {
+          "id": "LX",
+          "name": "LX",
+          "yearFrom": 2024,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "omoda",
+      "name": "أومودا",
+      "cover": "suv",
+      "models": [
+        {
+          "id": "C5",
+          "name": "C5",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        },
+        {
+          "id": "E5",
+          "name": "E5",
+          "yearFrom": 2024,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "jaecoo",
+      "name": "جايكو",
+      "cover": "suv",
+      "models": [
+        {
+          "id": "J7",
+          "name": "J7",
+          "yearFrom": 2024,
+          "yearTo": 2026
+        },
+        {
+          "id": "J8",
+          "name": "J8",
+          "yearFrom": 2024,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "haval",
+      "name": "هافال",
+      "cover": "suv",
+      "models": [
+        {
+          "id": "JOLION",
+          "name": "جوليون",
+          "yearFrom": 2021,
+          "yearTo": 2026
+        },
+        {
+          "id": "H6",
+          "name": "H6",
+          "yearFrom": 2021,
+          "yearTo": 2026
+        },
+        {
+          "id": "DARGO",
+          "name": "دارجو",
+          "yearFrom": 2022,
+          "yearTo": 2026
+        },
+        {
+          "id": "H9",
+          "name": "H9",
+          "yearFrom": 2021,
+          "yearTo": 2026
+        },
+        {
+          "id": "JOLION-PRO",
+          "name": "جوليون برو",
+          "yearFrom": 2024,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "tank",
+      "name": "تانك",
+      "cover": "suv",
+      "models": [
+        {
+          "id": "300",
+          "name": "300",
+          "yearFrom": 2022,
+          "yearTo": 2026
+        },
+        {
+          "id": "500",
+          "name": "500",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        },
+        {
+          "id": "700",
+          "name": "700",
+          "yearFrom": 2025,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "mg",
+      "name": "إم جي",
+      "cover": "sedan",
+      "models": [
+        {
+          "id": "MG5",
+          "name": "MG5",
+          "yearFrom": 2020,
+          "yearTo": 2026
+        },
+        {
+          "id": "MG6",
+          "name": "MG6",
+          "yearFrom": 2019,
+          "yearTo": 2025
+        },
+        {
+          "id": "MG-ZS",
+          "name": "ZS",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "MG-HS",
+          "name": "HS",
+          "yearFrom": 2019,
+          "yearTo": 2026
+        },
+        {
+          "id": "MG-RX5",
+          "name": "RX5",
+          "yearFrom": 2020,
+          "yearTo": 2025
+        },
+        {
+          "id": "MG4",
+          "name": "MG4",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        },
+        {
+          "id": "MG7",
+          "name": "MG7",
+          "yearFrom": 2024,
+          "yearTo": 2026
+        },
+        {
+          "id": "ONE",
+          "name": "ون",
+          "yearFrom": 2024,
+          "yearTo": 2026
+        },
+        {
+          "id": "MG-GT",
+          "name": "GT",
+          "yearFrom": 2021,
+          "yearTo": 2026
+        },
+        {
+          "id": "MG-RX8",
+          "name": "RX8",
+          "yearFrom": 2020,
+          "yearTo": 2024
+        },
+        {
+          "id": "CYBERSTER",
+          "name": "سايبرستر",
+          "yearFrom": 2025,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "maxus",
+      "name": "ماكسوس",
+      "cover": "van",
+      "models": [
+        {
+          "id": "D60",
+          "name": "D60",
+          "yearFrom": 2021,
+          "yearTo": 2025
+        },
+        {
+          "id": "D90",
+          "name": "D90",
+          "yearFrom": 2021,
+          "yearTo": 2026
+        },
+        {
+          "id": "G50",
+          "name": "G50",
+          "yearFrom": 2021,
+          "yearTo": 2026
+        },
+        {
+          "id": "V80",
+          "name": "V80",
+          "yearFrom": 2019,
+          "yearTo": 2026
+        },
+        {
+          "id": "T60",
+          "name": "T60",
+          "yearFrom": 2020,
+          "yearTo": 2026
+        },
+        {
+          "id": "T90",
+          "name": "T90",
+          "yearFrom": 2022,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "gac",
+      "name": "جي إيه سي",
+      "cover": "suv",
+      "models": [
+        {
+          "id": "GS3",
+          "name": "GS3",
+          "yearFrom": 2020,
+          "yearTo": 2026
+        },
+        {
+          "id": "GS4",
+          "name": "GS4",
+          "yearFrom": 2019,
+          "yearTo": 2025
+        },
+        {
+          "id": "GS8",
+          "name": "GS8",
+          "yearFrom": 2020,
+          "yearTo": 2026
+        },
+        {
+          "id": "EMKOO",
+          "name": "إمكو",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        },
+        {
+          "id": "EMZOOM",
+          "name": "إمزوم",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        },
+        {
+          "id": "AION-Y",
+          "name": "أيون Y",
+          "yearFrom": 2024,
+          "yearTo": 2026
+        },
+        {
+          "id": "AION-V",
+          "name": "أيون V",
+          "yearFrom": 2025,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "changan",
+      "name": "شانجان",
+      "cover": "suv",
+      "models": [
+        {
+          "id": "ALSVIN",
+          "name": "ألسفين",
+          "yearFrom": 2019,
+          "yearTo": 2026
+        },
+        {
+          "id": "EADO",
+          "name": "إيدو",
+          "yearFrom": 2019,
+          "yearTo": 2025
+        },
+        {
+          "id": "CS35-PLUS",
+          "name": "CS35 بلس",
+          "yearFrom": 2019,
+          "yearTo": 2026
+        },
+        {
+          "id": "CS55-PLUS",
+          "name": "CS55 بلس",
+          "yearFrom": 2020,
+          "yearTo": 2026
+        },
+        {
+          "id": "CS75-PLUS",
+          "name": "CS75 بلس",
+          "yearFrom": 2020,
+          "yearTo": 2026
+        },
+        {
+          "id": "CS95",
+          "name": "CS95",
+          "yearFrom": 2020,
+          "yearTo": 2026
+        },
+        {
+          "id": "UNI-T",
+          "name": "UNI-T",
+          "yearFrom": 2021,
+          "yearTo": 2026
+        },
+        {
+          "id": "UNI-V",
+          "name": "UNI-V",
+          "yearFrom": 2022,
+          "yearTo": 2026
+        },
+        {
+          "id": "UNI-K",
+          "name": "UNI-K",
+          "yearFrom": 2022,
+          "yearTo": 2026
+        },
+        {
+          "id": "HUNTER",
+          "name": "هنتر",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        },
+        {
+          "id": "NEVO-A05",
+          "name": "نيفو A05",
+          "yearFrom": 2024,
+          "yearTo": 2026
+        },
+        {
+          "id": "DEEPAL-S07",
+          "name": "ديبال S07",
+          "yearFrom": 2024,
+          "yearTo": 2026
+        },
+        {
+          "id": "DEEPAL-L07",
+          "name": "ديبال L07",
+          "yearFrom": 2025,
+          "yearTo": 2026
+        },
+        {
+          "id": "HUNTER-E",
+          "name": "هنتر كهرباء",
+          "yearFrom": 2024,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "bestune",
+      "name": "بيستون",
+      "cover": "sedan",
+      "models": [
+        {
+          "id": "T77",
+          "name": "T77",
+          "yearFrom": 2021,
+          "yearTo": 2026
+        },
+        {
+          "id": "T99",
+          "name": "T99",
+          "yearFrom": 2021,
+          "yearTo": 2026
+        },
+        {
+          "id": "B70",
+          "name": "B70",
+          "yearFrom": 2022,
+          "yearTo": 2026
+        },
+        {
+          "id": "T55",
+          "name": "T55",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "hongqi",
+      "name": "هونشي",
+      "cover": "sedan",
+      "models": [
+        {
+          "id": "H5",
+          "name": "H5",
+          "yearFrom": 2022,
+          "yearTo": 2026
+        },
+        {
+          "id": "H9",
+          "name": "H9",
+          "yearFrom": 2021,
+          "yearTo": 2026
+        },
+        {
+          "id": "HS5",
+          "name": "HS5",
+          "yearFrom": 2022,
+          "yearTo": 2026
+        },
+        {
+          "id": "HS7",
+          "name": "HS7",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        },
+        {
+          "id": "E-HS9",
+          "name": "E-HS9",
+          "yearFrom": 2022,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "dongfeng",
+      "name": "دونغ فنغ",
+      "cover": "suv",
+      "models": [
+        {
+          "id": "AX7",
+          "name": "AX7",
+          "yearFrom": 2020,
+          "yearTo": 2025
+        },
+        {
+          "id": "RICH6",
+          "name": "ريتش 6",
+          "yearFrom": 2021,
+          "yearTo": 2026
+        },
+        {
+          "id": "BOX",
+          "name": "بوكس",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        },
+        {
+          "id": "MAGE",
+          "name": "مايج",
+          "yearFrom": 2024,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "forthing",
+      "name": "فورثينج",
+      "cover": "mpv",
+      "models": [
+        {
+          "id": "U-TOUR",
+          "name": "يو تور",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        },
+        {
+          "id": "T5-EVO",
+          "name": "T5 إيفو",
+          "yearFrom": 2022,
+          "yearTo": 2026
+        },
+        {
+          "id": "FRIDAY",
+          "name": "فرايدي",
+          "yearFrom": 2024,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "baic",
+      "name": "بايك",
+      "cover": "suv",
+      "models": [
+        {
+          "id": "X35",
+          "name": "X35",
+          "yearFrom": 2019,
+          "yearTo": 2025
+        },
+        {
+          "id": "X55",
+          "name": "X55",
+          "yearFrom": 2021,
+          "yearTo": 2026
+        },
+        {
+          "id": "X7",
+          "name": "X7",
+          "yearFrom": 2021,
+          "yearTo": 2026
+        },
+        {
+          "id": "BJ40",
+          "name": "BJ40",
+          "yearFrom": 2020,
+          "yearTo": 2026
+        },
+        {
+          "id": "BJ60",
+          "name": "BJ60",
+          "yearFrom": 2024,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "jac",
+      "name": "جاك",
+      "cover": "van",
+      "models": [
+        {
+          "id": "J7",
+          "name": "J7",
+          "yearFrom": 2020,
+          "yearTo": 2025
+        },
+        {
+          "id": "JS4",
+          "name": "JS4",
+          "yearFrom": 2021,
+          "yearTo": 2026
+        },
+        {
+          "id": "JS6",
+          "name": "JS6",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        },
+        {
+          "id": "T8",
+          "name": "T8",
+          "yearFrom": 2020,
+          "yearTo": 2026
+        },
+        {
+          "id": "SUNRAY",
+          "name": "صن راي",
+          "yearFrom": 2019,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "foton",
+      "name": "فوتون",
+      "cover": "van",
+      "models": [
+        {
+          "id": "TUNLAND",
+          "name": "تونلاند",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "VIEW",
+          "name": "فيو",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "TOANO",
+          "name": "توانو",
+          "yearFrom": 2019,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "ora",
+      "name": "أورا",
+      "cover": "hatch",
+      "models": [
+        {
+          "id": "GOOD-CAT",
+          "name": "جود كات",
+          "yearFrom": 2022,
+          "yearTo": 2026
+        },
+        {
+          "id": "BALLET-CAT",
+          "name": "باليه كات",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        },
+        {
+          "id": "LIGHTNING-CAT",
+          "name": "لايتنينج كات",
+          "yearFrom": 2024,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "kaiyi",
+      "name": "كايي",
+      "cover": "sedan",
+      "models": [
+        {
+          "id": "E5",
+          "name": "E5",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        },
+        {
+          "id": "X3-PRO",
+          "name": "X3 برو",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "victory",
+      "name": "فيكتوري",
+      "cover": "van",
+      "models": []
+    },
+    {
+      "id": "tesla",
+      "name": "تسلا",
+      "cover": "sedan",
+      "models": [
+        {
+          "id": "MODEL-3",
+          "name": "موديل 3",
+          "yearFrom": 2021,
+          "yearTo": 2026
+        },
+        {
+          "id": "MODEL-Y",
+          "name": "موديل Y",
+          "yearFrom": 2022,
+          "yearTo": 2026
+        },
+        {
+          "id": "MODEL-S",
+          "name": "موديل S",
+          "yearFrom": 2022,
+          "yearTo": 2026
+        },
+        {
+          "id": "MODEL-X",
+          "name": "موديل X",
+          "yearFrom": 2022,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "kgm",
+      "name": "كي جي إم",
+      "cover": "suv",
+      "models": [
+        {
+          "id": "TIVOLI",
+          "name": "تيفولي",
+          "yearFrom": 2018,
+          "yearTo": 2025
+        },
+        {
+          "id": "KORANDO",
+          "name": "كوراندو",
+          "yearFrom": 2020,
+          "yearTo": 2026
+        },
+        {
+          "id": "REXTON",
+          "name": "ريكستون",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "MUSSO",
+          "name": "موسو",
+          "yearFrom": 2019,
+          "yearTo": 2026
+        },
+        {
+          "id": "TORRES",
+          "name": "توريس",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "lotus",
+      "name": "لوتس",
+      "cover": "suv",
+      "models": [
+        {
+          "id": "ELETRE",
+          "name": "إليتر",
+          "yearFrom": 2024,
+          "yearTo": 2026
+        },
+        {
+          "id": "EMEYA",
+          "name": "إيميا",
+          "yearFrom": 2025,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "polestar",
+      "name": "بولستار",
+      "cover": "sedan",
+      "models": [
+        {
+          "id": "2",
+          "name": "2",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        },
+        {
+          "id": "3",
+          "name": "3",
+          "yearFrom": 2024,
+          "yearTo": 2026
+        },
+        {
+          "id": "4",
+          "name": "4",
+          "yearFrom": 2025,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "seat",
+      "name": "سيات",
+      "cover": "hatch",
+      "models": [
+        {
+          "id": "IBIZA",
+          "name": "إبيزا",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "LEON",
+          "name": "ليون",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "ATECA",
+          "name": "أتيكا",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "TARRACO",
+          "name": "تاراكو",
+          "yearFrom": 2019,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "cupra",
+      "name": "كوبرا",
+      "cover": "suv",
+      "models": [
+        {
+          "id": "FORMENTOR",
+          "name": "فورمنتور",
+          "yearFrom": 2021,
+          "yearTo": 2026
+        },
+        {
+          "id": "LEON",
+          "name": "ليون",
+          "yearFrom": 2021,
+          "yearTo": 2026
+        },
+        {
+          "id": "BORN",
+          "name": "بورن",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        },
+        {
+          "id": "TAVASCAN",
+          "name": "تافاسكان",
+          "yearFrom": 2025,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "fiat",
+      "name": "فيات",
+      "cover": "hatch",
+      "models": [
+        {
+          "id": "500",
+          "name": "500",
+          "yearFrom": 2016,
+          "yearTo": 2025
+        },
+        {
+          "id": "TIPO",
+          "name": "تيبو",
+          "yearFrom": 2016,
+          "yearTo": 2025
+        },
+        {
+          "id": "DOBLO",
+          "name": "دوبلو",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "alfa",
+      "name": "ألفا روميو",
+      "cover": "sedan",
+      "models": [
+        {
+          "id": "GIULIA",
+          "name": "جوليا",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "STELVIO",
+          "name": "ستيلفيو",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        },
+        {
+          "id": "TONALE",
+          "name": "تونالي",
+          "yearFrom": 2023,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "chrysler",
+      "name": "كرايسلر",
+      "cover": "mpv",
+      "models": [
+        {
+          "id": "300C",
+          "name": "300C",
+          "yearFrom": 2016,
+          "yearTo": 2023
+        },
+        {
+          "id": "PACIFICA",
+          "name": "باسيفيكا",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        }
+      ]
+    },
+    {
+      "id": "lincoln",
+      "name": "لينكولن",
+      "cover": "suv",
+      "models": [
+        {
+          "id": "CORSAIR",
+          "name": "كورسير",
+          "yearFrom": 2020,
+          "yearTo": 2026
+        },
+        {
+          "id": "NAUTILUS",
+          "name": "نوتيلس",
+          "yearFrom": 2019,
+          "yearTo": 2026
+        },
+        {
+          "id": "AVIATOR",
+          "name": "أفييتر",
+          "yearFrom": 2020,
+          "yearTo": 2026
+        },
+        {
+          "id": "NAVIGATOR",
+          "name": "نافيجيتر",
+          "yearFrom": 2018,
+          "yearTo": 2026
+        }
+      ]
+    }
+  ]
+}
