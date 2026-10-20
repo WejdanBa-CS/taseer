@@ -48,6 +48,11 @@ class AppState extends ChangeNotifier {
 
   CrowdStats? crowd;
 
+  AppScreen? _loginReturnScreen;
+  NavTab? _loginReturnTab;
+  int? _loginReturnStep;
+  CarStage? _loginReturnCarStage;
+
   bool get loggedIn => session != null;
   bool get subscribed => access.monthActive;
 
@@ -97,15 +102,100 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// يفتح تسعير القطع مع السيارة المختارة إن اكتملت بياناتها.
+  void goFlowWithCar() {
+    tab = NavTab.parts;
+    screen = AppScreen.flow;
+    if (city != null && brand != null && model != null && yearLabel != null) {
+      step = 2;
+      carStage = CarStage.year;
+    } else if (brand != null && model != null && yearLabel != null) {
+      step = 0;
+      carStage = CarStage.year;
+    } else if (brand != null) {
+      step = 1;
+      carStage = model == null
+          ? CarStage.model
+          : yearLabel == null
+              ? CarStage.year
+              : CarStage.year;
+    }
+    notifyListeners();
+  }
+
   void openLogin() {
+    if (screen != AppScreen.login) {
+      _loginReturnScreen = screen;
+      _loginReturnTab = tab;
+      _loginReturnStep = step;
+      _loginReturnCarStage = carStage;
+    }
     screen = AppScreen.login;
     notifyListeners();
+  }
+
+  /// يرجع المستخدم لنفس الشاشة اللي فتح منها تسجيل الدخول.
+  void completeLogin() {
+    final back = _loginReturnScreen;
+    _loginReturnScreen = null;
+    if (back != null && back != AppScreen.login) {
+      screen = back;
+      tab = _loginReturnTab ?? tab;
+      step = _loginReturnStep ?? step;
+      carStage = _loginReturnCarStage ?? carStage;
+      notifyListeners();
+      return;
+    }
+    goBack();
   }
 
   void openCosts() {
     tab = NavTab.cars;
     screen = AppScreen.costs;
+    applyGarageCar();
     notifyListeners();
+  }
+
+  /// يملأ اختيار القطع من سيارة الكراج المحفوظة (إن وجدت).
+  void applyGarageCar() {
+    final car = garage.car;
+    if (car == null) return;
+    brand = car.brand;
+    model = car.model;
+    yearLabel = car.yearLabel;
+    if (city == null && car.city.isNotEmpty) {
+      for (final item in Catalog.instance.cities) {
+        if (item.name == car.city) {
+          city = item;
+          break;
+        }
+      }
+    }
+  }
+
+  /// يحفظ سيارة لقائمة التكلفة بدون اشتراك، ويملأ حالة القطع.
+  Future<void> setCostCar({
+    required String brandId,
+    required String modelId,
+    required String year,
+  }) async {
+    brand = brandId;
+    model = modelId;
+    yearLabel = year;
+    part = null;
+    quote = '';
+    crowd = null;
+    final cityValue = city;
+    final data = garage;
+    data.car = GarageCar(
+      region: cityValue?.region ?? data.car?.region ?? '',
+      city: cityValue?.name ?? data.car?.city ?? '',
+      brand: brandId,
+      model: modelId,
+      yearLabel: year,
+      modelName: modelName() ?? modelId,
+    );
+    await saveGarage(data);
   }
 
   void openGarage() {

@@ -391,8 +391,8 @@ class WelcomeScreen extends StatelessWidget {
           runSpacing: 8,
           children: const [
             _Perk('التصفّح بدون تسجيل'),
-            _Perk('بدون حجز'),
-            _Perk('بدون إعلانات'),
+            _Perk('كيا وفيكتوري في التطبيق'),
+            _Perk('تويوتا عبر متجر الوكيل'),
           ],
         ),
       ],

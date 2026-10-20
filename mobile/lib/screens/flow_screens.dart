@@ -5,7 +5,6 @@ import '../app_state.dart';
 import '../data/catalog.dart';
 import '../data/models.dart';
 import '../services/advice.dart';
-import '../services/garage_store.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
 
@@ -187,16 +186,19 @@ class _CarScreenState extends State<CarScreen> {
             const PageTitle('وش سيارتك؟'),
             const SectionLead('اختر الوكالة، ثم حدد الموديل والسنة.'),
             ...Catalog.instance.brands.map(
-              (brand) => ChoiceTile(
-                title: brand.name,
-                subtitle: 'أسعار قطع منشورة',
-                onTap: () => state.selectBrand(brand.id),
-              ),
+              (brand) {
+                final count = Catalog.instance.modelsForBrand(brand.id).length;
+                return ChoiceTile(
+                  title: brand.name,
+                  subtitle: '$count موديل · أسعار قطع منشورة داخل التطبيق',
+                  onTap: () => state.selectBrand(brand.id),
+                );
+              },
             ),
-            SoftNote('تويوتا أسعارها في متجر الوكيل وما دخلت الجدول.'),
-            TextButton(
-              onPressed: () => openUrl(Catalog.instance.sources['toyota']!.url),
-              child: const Text('فتح متجر تويوتا'),
+            ChoiceTile(
+              title: 'تويوتا',
+              subtitle: 'خارج التطبيق · متجر الوكيل',
+              onTap: () => openUrl(Catalog.instance.sources['toyota']!.url),
             ),
           ],
         ),
@@ -570,19 +572,17 @@ class _ResultScreenState extends State<ResultScreen> {
 
   Future<void> _rememberCar() async {
     final state = widget.state;
-    if (!state.subscribed || state.city == null || state.brand == null || state.model == null || state.yearLabel == null) {
+    if (state.city == null ||
+        state.brand == null ||
+        state.model == null ||
+        state.yearLabel == null) {
       return;
     }
-    final garage = state.garage;
-    garage.car = GarageCar(
-      region: state.city!.region,
-      city: state.city!.name,
-      brand: state.brand!,
-      model: state.model!,
-      yearLabel: state.yearLabel!,
-      modelName: state.modelName() ?? state.model!,
+    await state.setCostCar(
+      brandId: state.brand!,
+      modelId: state.model!,
+      year: state.yearLabel!,
     );
-    await state.saveGarage(garage);
   }
 
   @override
@@ -815,10 +815,10 @@ class _ResultScreenState extends State<ResultScreen> {
           const SizedBox(height: 8),
           OutlinedButton(
             onPressed: () => state.buy('advice_month'),
-            child: const Text('اشتراك 29 ريال: بدون إعلان وسجل السيارة'),
+            child: const Text('اشتراك 29 ريال: سجل السيارة والتذكير'),
           ),
           const SoftNote(
-            '9 ريال تفتح نصيحة واحدة وما تشيل الإعلان. الاشتراك بـ 29 ريال يشيل الإعلان ويحفظ السيارة والتذكير والوقود والتأمين والتكاليف. سعر القطعة الأصلية يبقى مجاني.',
+            '9 ريال تفتح نصيحة واحدة. الاشتراك بـ 29 ريال يحفظ السيارة والتذكير والوقود والتأمين وملخص التكاليف. سعر القطعة الأصلية يبقى مجاني.',
           ),
         ],
       ),
