@@ -32,3 +32,4 @@ flutter:
     - assets/data/fuels.json
     - assets/images/taseer-logo.png
     - assets/images/cars/
+    - google_fonts/
