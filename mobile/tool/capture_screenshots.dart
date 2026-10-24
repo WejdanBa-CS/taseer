@@ -2,10 +2,12 @@
 // From mobile/: flutter test tool/capture_screenshots.dart
 
 import 'dart:io';
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -16,18 +18,58 @@ import 'package:taseer/services/billing.dart';
 
 const _shotKey = ValueKey('readme-shot');
 
+Future<void> _loadFontFile(String family, File file) async {
+  if (!file.existsSync()) return;
+  final bytes = await file.readAsBytes();
+  final loader = FontLoader(family);
+  loader.addFont(Future.value(ByteData.sublistView(Uint8List.fromList(bytes))));
+  await loader.load();
+}
+
+Future<void> _loadMaterialIcons() async {
+  var root = Platform.environment['FLUTTER_ROOT'];
+  if (root == null || root.isEmpty) {
+    final which = await Process.run('which', ['flutter']);
+    if (which.exitCode == 0) {
+      final flutterPath = (which.stdout as String).trim();
+      root = File(flutterPath).parent.parent.path;
+    }
+  }
+  if (root == null) return;
+  final otf = File(
+    '$root/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf',
+  );
+  await _loadFontFile('MaterialIcons', otf);
+}
+
+Future<void> _warmTajawal() async {
+  GoogleFonts.config.allowRuntimeFetching = false;
+  // Touch every weight the UI uses so assets under google_fonts/ load.
+  for (final weight in [
+    FontWeight.w300,
+    FontWeight.w400,
+    FontWeight.w500,
+    FontWeight.w700,
+    FontWeight.w800,
+    FontWeight.w900,
+  ]) {
+    GoogleFonts.tajawal(fontWeight: weight);
+  }
+  GoogleFonts.tajawalTextTheme();
+  await GoogleFonts.pendingFonts();
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   SharedPreferences.setMockInitialValues({});
-  GoogleFonts.config.allowRuntimeFetching = false;
 
   late Catalog catalog;
   late Directory outDir;
 
   setUpAll(() async {
+    await _loadMaterialIcons();
+    await _warmTajawal();
     catalog = await Catalog.load();
-    GoogleFonts.tajawalTextTheme();
-    await GoogleFonts.pendingFonts();
     outDir = Directory('${Directory.current.path}/../docs/screenshots');
     if (!outDir.existsSync()) outDir.createSync(recursive: true);
   });
@@ -53,7 +95,12 @@ void main() {
       ),
     );
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 80));
+    // Decode Image.asset frames.
+    await tester.runAsync(() async {
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+    });
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
 
     await tester.runAsync(() async {
       final boundary =
