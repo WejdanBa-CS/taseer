@@ -11,6 +11,16 @@ flutter pub get
 flutter run
 ```
 
+### Harness (اختبارات + أمان + smoke)
+
+من جذر المستودع (مش من داخل `mobile`):
+
+```bash
+./harness/run.sh all
+```
+
+التفاصيل في [`../harness/README.md`](../harness/README.md).
+
 ### iOS
 
 ```bash
